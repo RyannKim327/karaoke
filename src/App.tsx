@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
 import { Route, Routes } from "react-router-dom";
 import Search from "./view/search";
 
@@ -17,7 +16,7 @@ export default function App() {
     document.getElementById("my-player")?.appendChild(player);
   }, []);
   return (
-    <div>
+    <div className="w-dvw h-dvh">
       <Routes>
         <Route path="/" element={<div id="my-player"></div>} />
         <Route path="search" element={<Search />} />
