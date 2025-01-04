@@ -1,25 +1,26 @@
-import { useEffect, useState } from "react";
 import { Route, Routes } from "react-router-dom";
 import Search from "./view/search";
+import Video from "./view/video";
+import { useEffect, useState } from "react";
+import { Navigate } from "react-router";
 
 export default function App() {
-  const [videos, setVideos] = useState();
+  const [id, setId] = useState()
   useEffect(() => {
-    // const data = JSON.parse(readFileSync("data/data.json", "utf-8"));
-    // setVideos(data);
-    if (document.getElementById("my-player")) {
-      document.getElementById("my-player").innerHTML = "";
+    let x = ""
+    const alpha = "abcdefghijklmnopqrstuvwxyz0123456789"
+    for (let i = 0; i < 8; i++){
+      const r = Math.floor(Math.random() * alpha.length)
+      x += alpha[r]
     }
-    const player = document.createElement("iframe");
-    player.id = "iframe-player";
-
-    document.getElementById("my-player")?.appendChild(player);
-  }, []);
+    setId(x)
+  }, [])
   return (
     <div className="w-dvw h-dvh">
       <Routes>
-        <Route path="/" element={<div id="my-player"></div>} />
-        <Route path="search" element={<Search />} />
+        <Route path="/" element={<Navigate to={`/${id}`} />} />
+        <Route path="/:id" element={<Video />} />
+        <Route path="/search/:id" element={<Search />} />
       </Routes>
     </div>
   );
