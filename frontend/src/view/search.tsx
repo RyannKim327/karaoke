@@ -25,9 +25,13 @@ export default function Search() {
     }
   };
 
-  const sendToDB = (videoid: string) => {
-    axios.get(`/../api?key=${id}&video=${videoid}`).then(res => {
-      alert(res.data.response)
+  const sendToDB = (title: string, videoid: string) => {
+    axios.get(`/../api?key=${id}&video=${videoid}&title=${title}`).then(res => {
+      if(res.data.status === 200){
+        alert(res.data.response)
+      }else{
+        alert(res.data.response)
+      }
     }).catch(e => {
       alert(e)
     })
@@ -50,6 +54,7 @@ export default function Search() {
           className="bg-transparent box-border outline-none"
         />
         <FontAwesomeIcon
+          className="cursor-pointer"
           onClick={() => {
             search_video();
           }}
@@ -62,7 +67,7 @@ export default function Search() {
             <div
               onClick={() => {
                 if(video?.id){
-                  sendToDB(video?.id?.videoId)
+                  sendToDB(video?.snippet?.title, video?.id?.videoId)
                 }else{
                   alert("This video is not available")
                 }

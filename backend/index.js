@@ -14,8 +14,15 @@ app.get("/api", (req, res) => {
     if (!keys.includes(data.key)) {
       json[data.key] = []
     }
+    
     // TODO: ID existed
     if (data.video) {
+      if(!data.title){
+        res.send(JSON.stringify({
+          "status": 302,
+          "response": "This must have title"
+        }))
+      }
       const yt_1 = /youtube.com\/watch\?v=([a-zA-Z0-9\-_]{11})/i;
       const yt_2 = /youtu.be\/([a-zA-Z0-9\-_]{11})/i;
       let video = data.video;
@@ -27,7 +34,10 @@ app.get("/api", (req, res) => {
         done = true
       }
       if (video) {
-        json[data.key].push(video);
+        json[data.key].push({
+          "title": data.title,
+          "video": video
+        });
       }
       fs.writeFileSync("db.json", JSON.stringify(json, null, 2));
       res.send(JSON.stringify({
