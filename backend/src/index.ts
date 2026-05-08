@@ -27,8 +27,7 @@ const channels = new Map<string, Set<WebSocket>>()
 
 wss.on("connection", (ws, req) => {
 	const path = req.url?.slice(1) || "default";
-	console.log(path)
-	// create room if missing
+
 	if (!channels.has(path)) {
 		channels.set(path, new Set());
 	}

@@ -1,45 +1,157 @@
 <script lang="ts">
+	import { onMount } from "svelte";
+
 	interface SongInfo {
-		title: string
-		url: string
+		title: string;
+		url: string;
 	}
 
-	export let params: {id: string}
-	
-	const socket = new WebSocket(`ws://localhost:8080/${params.id}`);
+	export let params: { id: string };
 
-	socket.onopen = (event: Event) => {
-		console.log("Initiated");
+	let socket: WebSocket;
+
+	let search = "";
+
+	let songs: SongInfo[] = [
+		{
+			title: "My Way",
+			url: "sample-url"
+		},
+		{
+			title: "Bohemian Rhapsody",
+			url: "sample-url"
+		},
+		{
+			title: "Perfect",
+			url: "sample-url"
+		},
+		{
+			title: "Dancing Queen",
+			url: "sample-url"
+		},
+		{
+			title: "Through the Fire",
+			url: "sample-url"
+		}
+	];
+
+	onMount(() => {
+		socket = new WebSocket(`ws://localhost:8080/${params.id}`);
+
+		socket.onopen = () => {
+			console.log("Initiated");
+
+			socket.send(
+				JSON.stringify({
+					play: true
+				})
+			);
+		};
+
+		socket.onerror = (error: Event) => {
+			console.error(error);
+		};
+
+		socket.onclose = () => {
+			console.log("Disconnected");
+		};
+
+		return () => {
+			socket.close();
+		};
+	});
+
+	function send(song: SongInfo) {
 		socket.send(
 			JSON.stringify({
-				play: true,
-			}),
+				title: song.title,
+				url: song.url
+			})
 		);
-	};
-
-	function send() {
-	socket.send(JSON.stringify({
-			title: "title",
-			url: "test",
-		}))
-	
 	}
 
-	socket.onerror = (error: Event) => {
-		console.error(error);
-	};
-
-	socket.onclose = (evnet: CloseEvent) => {
-		socket.send(
-			JSON.stringify({
-				play: false,
-			}),
-		);
-	};
-
+	$: filteredSongs = songs.filter((song) =>
+		song.title.toLowerCase().includes(search.toLowerCase())
+	);
 </script>
 
-<div>
-	{params.id}
-	<button onclick={send}>Send</button>
+<div
+	class="min-h-screen bg-gradient-to-br from-zinc-950 via-zinc-900 to-red-950 text-white p-4 md:p-6"
+>
+	<div class="mx-auto max-w-3xl">
+		<!-- HEADER -->
+		<div
+			class="mb-6 rounded-3xl border border-white/10 bg-white/5 backdrop-blur-xl p-6 shadow-2xl"
+		>
+			<div
+				class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between"
+			>
+				<div>
+					<p class="text-sm uppercase tracking-[0.3em] text-zinc-400">
+						Room ID
+					</p>
+
+					<h1 class="text-4xl font-black tracking-tight text-red-400">
+						{params.id.toUpperCase()}
+					</h1>
+				</div>
+
+				<div class="text-sm text-zinc-400">
+					🎤 Songbook Queue System
+				</div>
+			</div>
+
+			<!-- SEARCH -->
+			<div class="mt-6 relative">
+				<input
+					type="text"
+					bind:value={search}
+					placeholder="Search songs..."
+					class="w-full rounded-2xl border border-white/10 bg-black/30 px-5 py-4 pr-12 text-white outline-none transition focus:border-red-400 focus:ring-2 focus:ring-red-500/30 placeholder:text-zinc-500"
+				/>
+
+				<div
+					class="absolute right-4 top-1/2 -translate-y-1/2 text-zinc-500"
+				>
+					🔍
+				</div>
+			</div>
+		</div>
+
+		<!-- SONG LIST -->
+		<div class="space-y-3">
+			{#each filteredSongs as song}
+				<div
+					class="group flex items-center justify-between rounded-2xl border border-white/10 bg-white/5 px-5 py-4 backdrop-blur-md transition hover:border-red-500/40 hover:bg-white/10"
+				>
+					<div class="min-w-0">
+						<h2
+							class="truncate text-lg font-semibold text-white"
+						>
+							{song.title}
+						</h2>
+
+						<p class="text-sm text-zinc-500 truncate">
+							Ready to queue
+						</p>
+					</div>
+
+					<button
+						class="ml-4 flex h-11 w-11 items-center justify-center rounded-xl bg-red-500 text-2xl font-bold text-white shadow-lg shadow-red-500/20 transition hover:scale-105 hover:bg-red-400 active:scale-95"
+						on:click={() => send(song)}
+					>
+						+
+					</button>
+				</div>
+			{/each}
+
+			{#if filteredSongs.length === 0}
+				<div
+					class="rounded-2xl border border-dashed border-white/10 bg-black/20 p-10 text-center text-zinc-500"
+				>
+					No songs found.
+				</div>
+			{/if}
+		</div>
+	</div>
 </div>
