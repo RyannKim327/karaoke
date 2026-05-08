@@ -39,10 +39,7 @@ wss.on("connection", (ws, req) => {
 		channels.get(path)?.forEach((client) => {
 			if (client.readyState === WebSocket.OPEN) {
 				client.send(
-					JSON.stringify({
-						path,
-						message: event.toString()
-					})
+					event.toString()
 				);
 			}
 		});

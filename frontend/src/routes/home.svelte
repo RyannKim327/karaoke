@@ -17,7 +17,7 @@
 
 	function joinSession() {
 		if (!roomCode.trim()) return;
-		push(`/stream/${roomCode.trim()}`);
+		push(`/book/${roomCode.toLowerCase().trim()}`);
 	}
 </script>
 
@@ -27,7 +27,6 @@
 	<div
 		class="w-full max-w-md rounded-3xl border border-white/10 bg-white/5 backdrop-blur-xl shadow-2xl p-8"
 	>
-		<!-- Logo / Title -->
 		<div class="text-center mb-8">
 			<div
 				class="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-red-500/20 border border-red-500/30 mb-4"
@@ -44,7 +43,6 @@
 			</p>
 		</div>
 
-		<!-- Input -->
 		<div class="space-y-4">
 			<div>
 				<label class="text-sm text-zinc-400 mb-2 block"> Session Code </label>
@@ -57,7 +55,6 @@
 				/>
 			</div>
 
-			<!-- Buttons -->
 			<div class="grid grid-cols-2 gap-3">
 				<button
 					class="rounded-xl bg-white/10 hover:bg-white/15 border border-white/10 py-3 font-semibold transition active:scale-[0.98]"
@@ -75,7 +72,6 @@
 			</div>
 		</div>
 
-		<!-- Footer -->
 		<div class="mt-8 text-center text-xs text-zinc-500">
 			Sing together. Anywhere. Anytime.
 		</div>

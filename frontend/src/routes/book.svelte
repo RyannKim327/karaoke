@@ -11,28 +11,15 @@
 	let socket: WebSocket;
 
 	let search = "";
+	let activated = false;
+	let loading = true;
 
 	let songs: SongInfo[] = [
-		{
-			title: "My Way",
-			url: "sample-url"
-		},
-		{
-			title: "Bohemian Rhapsody",
-			url: "sample-url"
-		},
-		{
-			title: "Perfect",
-			url: "sample-url"
-		},
-		{
-			title: "Dancing Queen",
-			url: "sample-url"
-		},
-		{
-			title: "Through the Fire",
-			url: "sample-url"
-		}
+		{ title: "My Way", url: "sample-url" },
+		{ title: "Bohemian Rhapsody", url: "sample-url" },
+		{ title: "Perfect", url: "sample-url" },
+		{ title: "Dancing Queen", url: "sample-url" },
+		{ title: "Through the Fire", url: "sample-url" }
 	];
 
 	onMount(() => {
@@ -40,16 +27,31 @@
 
 		socket.onopen = () => {
 			console.log("Initiated");
-
+			loading = false;
 			socket.send(
 				JSON.stringify({
-					play: true
+					check: true
 				})
-			);
+			)
+		};
+
+		socket.onmessage = (event) => {
+			const data = JSON.parse(event.data);
+
+			// expecting something like: { play: true }
+			if (typeof data.play === "boolean") {
+				activated = data.play ?? false;
+			}
+
+			// optional: once activated, stop loading
+			if (activated) {
+				loading = false;
+			}
 		};
 
 		socket.onerror = (error: Event) => {
 			console.error(error);
+			loading = false;
 		};
 
 		socket.onclose = () => {
@@ -75,11 +77,24 @@
 	);
 </script>
 
+{#if loading}
+	<div class="min-h-screen flex items-center justify-center text-zinc-400">
+		Loading session...
+	</div>
+
+{:else if !activated}
+	<div class="min-h-screen flex items-center justify-center text-red-400">
+		Waiting for host to activate room...
+	</div>
+
+{:else}
+
+<!-- 👇 YOUR ORIGINAL LAYOUT STARTS HERE -->
+
 <div
 	class="min-h-screen bg-gradient-to-br from-zinc-950 via-zinc-900 to-red-950 text-white p-4 md:p-6"
 >
 	<div class="mx-auto max-w-3xl">
-		<!-- HEADER -->
 		<div
 			class="mb-6 rounded-3xl border border-white/10 bg-white/5 backdrop-blur-xl p-6 shadow-2xl"
 		>
@@ -101,7 +116,6 @@
 				</div>
 			</div>
 
-			<!-- SEARCH -->
 			<div class="mt-6 relative">
 				<input
 					type="text"
@@ -110,24 +124,19 @@
 					class="w-full rounded-2xl border border-white/10 bg-black/30 px-5 py-4 pr-12 text-white outline-none transition focus:border-red-400 focus:ring-2 focus:ring-red-500/30 placeholder:text-zinc-500"
 				/>
 
-				<div
-					class="absolute right-4 top-1/2 -translate-y-1/2 text-zinc-500"
-				>
+				<div class="absolute right-4 top-1/2 -translate-y-1/2 text-zinc-500">
 					🔍
 				</div>
 			</div>
 		</div>
 
-		<!-- SONG LIST -->
 		<div class="space-y-3">
 			{#each filteredSongs as song}
 				<div
 					class="group flex items-center justify-between rounded-2xl border border-white/10 bg-white/5 px-5 py-4 backdrop-blur-md transition hover:border-red-500/40 hover:bg-white/10"
 				>
 					<div class="min-w-0">
-						<h2
-							class="truncate text-lg font-semibold text-white"
-						>
+						<h2 class="truncate text-lg font-semibold text-white">
 							{song.title}
 						</h2>
 
@@ -155,3 +164,5 @@
 		</div>
 	</div>
 </div>
+
+{/if}
