@@ -31,20 +31,43 @@ const endpoints: serverProps = {
 		res.end(JSON.stringify(lists))
 	},
 	"/play": async (req, res) => {
-		const host = req.headers.host ?? ""
+		const host = req.headers.host ?? "";
 		const url = new URL(req.url ?? "", `http://${host}`);
-		const params = url?.searchParams
-		const id = params.get("id")
+		const id = url.searchParams.get("id");
 
 		if (!id) {
-			return res.end(JSON.stringify({
-				"error": "Please enter the video ID"
-			}))
+			res.statusCode = 400;
+			res.setHeader("Content-Type", "application/json");
+			return res.end(JSON.stringify({ error: "Please enter video ID" }));
 		}
 
-		const song = await play(id)
-		res.end(JSON.stringify(song))
+		try {
+			// 1. Get YouTube stream info (contains URL)
+			const streamInfo = await play(id);
+			res.end(streamInfo)
+			return
+			// 2. Fetch actual video data from Googlevideo
+			const response = await fetch(streamInfo);
 
+			if (!response.body) {
+				throw new Error("No stream body received");
+			}
+
+			// 3. Set headers for video streaming
+			res.statusCode = 200;
+			res.setHeader("Content-Type", "video/mp4");
+			res.setHeader("Access-Control-Allow-Origin", "*");
+			res.setHeader("Cache-Control", "no-cache");
+
+			// 4. PIPE stream to response (THIS is the correct part)
+			const nodeStream = response.body as unknown as NodeJS.ReadableStream;
+			nodeStream.pipe(res);
+			res.end(nodeStream)
+		} catch (err) {
+			console.error(err);
+			res.statusCode = 500;
+			res.end("Failed to stream video");
+		}
 	},
 	"/404": (req, res) => {
 		res.end(JSON.stringify({

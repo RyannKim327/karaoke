@@ -1,23 +1,41 @@
-import { Innertube } from "youtubei.js"
+import { writeFileSync } from "fs";
+import { ClientType, Innertube, Platform, Types } from "youtubei.js/web"
 
 export async function search(song: string) {
 	const yt = await Innertube.create()
 	const result = await yt.search(`${song} karaoke`)
-	return result.videos
+	return result.videos.filter((v) => {
+		return v.type.toLowerCase().includes("video") && v.title.text.toLowerCase().includes("karaoke");
+	});
 }
 
-
 export async function play(ytID: string) {
-	const yt = await Innertube.create()
-	const info = await yt.getInfo(ytID)
+	Platform.shim.eval = async (data: Types.BuildScriptResult, env: Record<string, Types.VMPrimative>) => {
+		const properties = [];
+		if (env.n) {
+			properties.push(`n: exportedVars.nFunction("${env.n}")`)
+		}
+		if (env.sig) {
+			properties.push(`sig: exportedVars.sigFunction("${env.sig}")`)
+		}
+		const code = `${data.output}\nreturn { ${properties.join(', ')} }`;
+		return new Function(code)();
+	}
 
-	// console.log(JSON.stringify(info.streaming_data, null, 2))
-	//
-	// const formats = info.streaming_data?.formats || []
-	//
-	// const format = formats.find((f) => {
-	// 	f.mime_type?.includes("video/mp4")
-	// })
+	const yt = await Innertube.create({
+		client_type: 'ANDROID'
+	});
 
-	return info.streaming_data.server_abr_streaming_url
+	const info = await yt.getInfo(ytID);
+
+	const format = await info.chooseFormat({
+		quality: 'best',
+		type: 'video+audio'
+	});
+
+	if (!format?.url) {
+		throw new Error('No stream URL found');
+	}
+
+	return format.url;
 }

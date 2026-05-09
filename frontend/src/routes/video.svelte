@@ -1,25 +1,35 @@
 <script lang="ts">
-	import { onMount } from "svelte";
+	import { Innertube } from "youtubei.js";
+	import { onMount, onDestroy } from "svelte";
+	import axios from "axios";
 
 	interface SongInfo {
 		title: string;
 		url: string;
 		play?: boolean;
+		check?: boolean;
 	}
 
 	export let params: { id: string };
 
 	let socket: WebSocket;
 	let sources: SongInfo[] = [];
-	let source = "";
 
-	async function playSong() {}
+	let source = "";
+	let id = "";
+
+	// keep track of blob url for cleanup
+	let currentBlobUrl: string | null = null;
+
+	function getUrl(videoId: string) {
+		source = `http://localhost:3000/play?id=${videoId}`;
+	}
 
 	onMount(() => {
 		socket = new WebSocket(`ws://localhost:8080/${params.id}`);
 
 		socket.onopen = () => {
-			console.log("Initiated");
+			console.log("Socket connected");
 
 			socket.send(
 				JSON.stringify({
@@ -31,6 +41,8 @@
 		socket.onmessage = (event: MessageEvent) => {
 			const data: SongInfo = JSON.parse(event.data);
 
+			console.log("Received:", data);
+
 			if (data.check) {
 				socket.send(
 					JSON.stringify({
@@ -41,27 +53,33 @@
 
 			if (data.title) {
 				sources = [...sources, data];
-				// optional: auto set current video source
-				if (!source) {
-					source = data.url;
+
+				// auto play first song
+				if (!id) {
+					id = data.url;
+					getUrl(id);
 				}
 			}
-
-			console.log(sources);
 		};
 
 		socket.onerror = (error: Event) => {
-			console.error(error);
+			console.error("Socket error:", error);
 		};
 
 		socket.onclose = () => {
-			console.log("Disconnected");
-			socket.send(JSON.stringify({ play: false }));
+			console.log("Socket disconnected");
 		};
+	});
 
-		return () => {
+	onDestroy(() => {
+		if (socket) {
 			socket.close();
-		};
+		}
+
+		// cleanup blob url
+		if (currentBlobUrl) {
+			URL.revokeObjectURL(currentBlobUrl);
+		}
 	});
 </script>
 
@@ -72,6 +90,7 @@
 			src={source}
 			autoplay
 			controls
+			playsinline
 		/>
 	{:else}
 		<div
@@ -79,7 +98,9 @@
 		>
 			<div class="text-center">
 				<div class="text-6xl mb-4">🎤</div>
+
 				<h1 class="text-white text-3xl font-bold">Kara Kokey</h1>
+
 				<p class="text-zinc-400 mt-2">Waiting for songs...</p>
 			</div>
 		</div>
