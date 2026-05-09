@@ -3,6 +3,6 @@
   import routes from "./routes";
 </script>
 
-<div class="h-dvh w-dvw">
+<div class="h-dvh w-dvw overflow-x-hidden">
   <Router {routes} useHash={true} />
 </div>

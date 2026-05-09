@@ -13,6 +13,8 @@
 	let sources: SongInfo[] = [];
 	let source = "";
 
+	async function playSong() {}
+
 	onMount(() => {
 		socket = new WebSocket(`ws://localhost:8080/${params.id}`);
 

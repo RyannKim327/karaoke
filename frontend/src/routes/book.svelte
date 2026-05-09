@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { onMount } from "svelte";
+	import axios from "axios"
 
 	interface SongInfo {
 		title: string;
@@ -14,13 +15,7 @@
 	let activated = false;
 	let loading = true;
 
-	let songs: SongInfo[] = [
-		{ title: "My Way", url: "sample-url" },
-		{ title: "Bohemian Rhapsody", url: "sample-url" },
-		{ title: "Perfect", url: "sample-url" },
-		{ title: "Dancing Queen", url: "sample-url" },
-		{ title: "Through the Fire", url: "sample-url" }
-	];
+	let songs: SongInfo[] = [];
 
 	onMount(() => {
 		socket = new WebSocket(`ws://localhost:8080/${params.id}`);
@@ -71,10 +66,10 @@
 			})
 		);
 	}
-
-	$: filteredSongs = songs.filter((song) =>
-		song.title.toLowerCase().includes(search.toLowerCase())
-	);
+	
+	async function searchSong(){
+		const { data } = await axios.get(`http://localhost:3000/search`)	
+	}
 </script>
 
 {#if loading}
@@ -124,14 +119,17 @@
 					class="w-full rounded-2xl border border-white/10 bg-black/30 px-5 py-4 pr-12 text-white outline-none transition focus:border-red-400 focus:ring-2 focus:ring-red-500/30 placeholder:text-zinc-500"
 				/>
 
-				<div class="absolute right-4 top-1/2 -translate-y-1/2 text-zinc-500">
+				<div
+					class="absolute right-4 top-1/2 -translate-y-1/2 text-zinc-500"
+					onclick={searchSong}
+				>
 					🔍
 				</div>
 			</div>
 		</div>
 
 		<div class="space-y-3">
-			{#each filteredSongs as song}
+			{#each songs as song}
 				<div
 					class="group flex items-center justify-between rounded-2xl border border-white/10 bg-white/5 px-5 py-4 backdrop-blur-md transition hover:border-red-500/40 hover:bg-white/10"
 				>
@@ -154,7 +152,7 @@
 				</div>
 			{/each}
 
-			{#if filteredSongs.length === 0}
+			{#if songs.length === 0}
 				<div
 					class="rounded-2xl border border-dashed border-white/10 bg-black/20 p-10 text-center text-zinc-500"
 				>
