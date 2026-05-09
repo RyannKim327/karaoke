@@ -1,20 +1,27 @@
 {
-  "name": "kara-kokey-backend",
+  "name": "backend",
   "version": "1.0.0",
+  "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "nodemon index",
+    "start": "npx tsx src/index",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "type": "commonjs",
-  "description": "",
+  "devDependencies": {
+    "@types/node": "^25.6.2",
+    "ts-node": "^10.9.2",
+    "tsx": "^4.21.0",
+    "typescript": "^6.0.3"
+  },
   "dependencies": {
-    "cors": "^2.8.5",
-    "express": "^4.21.2",
-    "fs": "^0.0.1-security",
-    "nodemon": "^3.1.9"
+    "cors": "^2.8.6",
+    "dotenv": "^17.4.2",
+    "isolated-vm": "^6.1.2",
+    "ws": "^8.20.0",
+    "youtubei.js": "^17.0.1"
   }
 }
