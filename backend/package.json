@@ -19,6 +19,7 @@
   },
   "dependencies": {
     "cors": "^2.8.6",
+    "dashjs": "^5.1.1",
     "dotenv": "^17.4.2",
     "isolated-vm": "^6.1.2",
     "ws": "^8.20.0",

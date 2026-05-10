@@ -1,41 +1,47 @@
-import { writeFileSync } from "fs";
-import { ClientType, Innertube, Platform, Types } from "youtubei.js/web"
+import { ServerResponse } from "http";
+import { Innertube } from "youtubei.js"
+import { Readable } from "stream";
+
+let ytPromise: Promise<Innertube> | null = null;
+
+async function getYt() {
+	if (!ytPromise) {
+		ytPromise = Innertube.create();
+	}
+	return ytPromise;
+}
 
 export async function search(song: string) {
-	const yt = await Innertube.create()
-	const result = await yt.search(`${song} karaoke`)
+	const yt = await getYt();
+	song = song.replace(/karaoke/gi, "")
+	const result = await yt.search(`${song.trim()} karaoke`)
 	return result.videos.filter((v) => {
-		return v.type.toLowerCase().includes("video") && v.title.text.toLowerCase().includes("karaoke");
+		return v.type.toLowerCase().includes("video") &&
+			((v.title.text.toLowerCase().includes("karaoke") && !v.title.text.toLowerCase().includes("#karaoke")) ||
+				v.title.text.toLowerCase().includes("minus one") ||
+				v.title.text.toLowerCase().includes("instrumental"))
 	});
 }
 
-export async function play(ytID: string) {
-	Platform.shim.eval = async (data: Types.BuildScriptResult, env: Record<string, Types.VMPrimative>) => {
-		const properties = [];
-		if (env.n) {
-			properties.push(`n: exportedVars.nFunction("${env.n}")`)
-		}
-		if (env.sig) {
-			properties.push(`sig: exportedVars.sigFunction("${env.sig}")`)
-		}
-		const code = `${data.output}\nreturn { ${properties.join(', ')} }`;
-		return new Function(code)();
+
+export async function play(ytID: string, res: ServerResponse) {
+	const yt = await getYt();
+	const info = await yt.getInfo(ytID, { client: "ANDROID" });
+
+	if (!info.streaming_data) {
+		throw new Error(`No streaming data for ${ytID}`);
 	}
 
-	const yt = await Innertube.create({
-		client_type: 'ANDROID'
+	const dl = await info.download({
+		quality: "best",
+		type: "video+audio",
+		format: "mp4",
 	});
 
-	const info = await yt.getInfo(ytID);
+	res.setHeader("Content-Type", "video/mp4");
+	res.setHeader("Accept-Ranges", "bytes");
 
-	const format = await info.chooseFormat({
-		quality: 'best',
-		type: 'video+audio'
-	});
-
-	if (!format?.url) {
-		throw new Error('No stream URL found');
-	}
-
-	return format.url;
+	Readable.fromWeb(dl as any).pipe(res);
 }
+
+
