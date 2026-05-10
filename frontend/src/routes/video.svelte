@@ -1,5 +1,7 @@
 <script lang="ts">
 	import { onMount, onDestroy } from "svelte";
+	import { API_HOST, WS_HOST } from "@/config";
+
 	interface SongInfo {
 		title: string;
 		url: string;
@@ -36,18 +38,20 @@
 		return { msg: "Maybe stick to the shower... 🚿", color: "text-red-400" };
 	}
 
-	function generateScore() {
-		score = Math.floor(Math.random() * 101);
-		showScore = true;
-		setTimeout(() => {
-			showScore = false;
-			score = null;
-		}, 4000);
+	function generateScore(isNext: boolean) {
+		if (!isNext) {
+			score = Math.floor(Math.random() * 101);
+			showScore = true;
+			setTimeout(() => {
+				showScore = false;
+				score = null;
+			}, 4000);
+		}
 	}
 
 	function getUrl(videoId: string) {
 		if (sources.length > 0) {
-			source = `http://localhost:3000/play?id=${videoId}`;
+			source = `${API_HOST}/play?id=${videoId}`;
 			setTimeout(() => {
 				if (video) video.play();
 			}, 500);
@@ -56,21 +60,9 @@
 		}
 	}
 
-	function nextSong(isNext = false) {
-		if (!isNext) {
-			generateScore();
-			setTimeout(() => {
-				if (sources.length > 0) {
-					id = sources[0].url;
-					getUrl(id);
-				} else {
-					source = "";
-					id = "";
-					started = false;
-				}
-				sources.shift();
-			}, 4000); // wait for score to show before next song
-		} else {
+	function nextSong(isNext: boolean) {
+		generateScore(isNext);
+		setTimeout(() => {
 			if (sources.length > 0) {
 				id = sources[0].url;
 				getUrl(id);
@@ -80,7 +72,7 @@
 				started = false;
 			}
 			sources.shift();
-		}
+		}, 4000); // wait for score to show before next song
 	}
 
 	function startPlay() {
@@ -110,7 +102,9 @@
 
 	onMount(() => {
 		window.addEventListener("keydown", handleKeydown);
-		socket = new WebSocket(`ws://localhost:8080/${params.id}`);
+		socket = new WebSocket(
+			`${WS_HOST}/${params.id}`,
+		);
 		socket.onopen = () => {
 			console.log("Socket connected");
 			socket.send(JSON.stringify({ play: true }));

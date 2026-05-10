@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { onMount } from "svelte";
 	import axios from "axios";
+	import { API_HOST, WS_HOST } from "@/config";
 
 	interface SongInfo {
 		title: string;
@@ -18,7 +19,9 @@
 	let songs: Record<string, any>[] = [];
 
 	onMount(() => {
-		socket = new WebSocket(`ws://localhost:8080/${params.id}`);
+		socket = new WebSocket(
+			`${WS_HOST}/${params.id}`,
+		);
 
 		socket.onopen = () => {
 			console.log("Initiated");
@@ -69,7 +72,7 @@
 
 	async function searchSong() {
 		const { data } = await axios.get(
-			`http://localhost:3000/search?q=${search}`,
+			`${API_HOST}/search?q=${search}`,
 		);
 		songs = data;
 	}
