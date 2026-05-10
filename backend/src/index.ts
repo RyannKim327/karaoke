@@ -41,10 +41,10 @@ app.use((req, res) => {
 	res.status(404).json({ error: "Endpoint not found" })
 })
 
-// --- WebSocket Server (same HTTP server, same port) ---
+// ✅ Attach WS to the SAME server (no separate port!)
 const wss = new WebSocketServer({ server })
-const channels = new Map<string, Set<WebSocket & { isAlive: boolean }>>()
 
+const channels = new Map<string, Set<WebSocket & { isAlive: boolean }>>()
 
 wss.on("connection", (ws: WebSocket & { isAlive: boolean }, req) => {
 	const channel = req.url?.replace(/^\/ws\/?/, "") || "default"
@@ -68,7 +68,8 @@ wss.on("connection", (ws: WebSocket & { isAlive: boolean }, req) => {
 	})
 })
 
-server.listen(port, () => {
-	console.log(`Listening on port ${port}`)
+// ✅ Bind to 0.0.0.0 so your phone can reach it
+server.listen(port, "0.0.0.0", () => {
+	console.log(`Listening on http://0.0.0.0:${port}`)
+	console.log(`WebSocket on ws://0.0.0.0:${port}`)
 })
-

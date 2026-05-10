@@ -43,7 +43,18 @@ export async function play(ytID: string, res: ServerResponse) {
 	res.setHeader("Content-Type", "video/mp4");
 	res.setHeader("Accept-Ranges", "bytes");
 
-	Readable.fromWeb(dl as any).pipe(res);
-}
+	const readable = Readable.fromWeb(dl as any);
 
+	readable.on("error", (err) => {
+		console.warn("Stream error (client likely disconnected):", err.message);
+		res.end();
+	});
+
+	res.on("close", () => {
+		// user navigated away, destroy the stream
+		readable.destroy();
+	});
+
+	readable.pipe(res);
+}
 

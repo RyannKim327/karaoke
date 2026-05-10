@@ -38,15 +38,15 @@
 		return { msg: "Maybe stick to the shower... 🚿", color: "text-red-400" };
 	}
 
-	function generateScore(isNext: boolean) {
-		if (!isNext) {
-			score = Math.floor(Math.random() * 101);
-			showScore = true;
-			setTimeout(() => {
-				showScore = false;
-				score = null;
-			}, 4000);
-		}
+	function generateScore(isNext?: boolean) {
+		// if (!isNext) {
+		score = Math.floor(Math.random() * 101);
+		showScore = true;
+		setTimeout(() => {
+			showScore = false;
+			score = null;
+		}, 4000);
+		// }
 	}
 
 	function getUrl(videoId: string) {
@@ -102,9 +102,7 @@
 
 	onMount(() => {
 		window.addEventListener("keydown", handleKeydown);
-		socket = new WebSocket(
-			`${WS_HOST}/${params.id}`,
-		);
+		socket = new WebSocket(`${WS_HOST}/${params.id}`);
 		socket.onopen = () => {
 			console.log("Socket connected");
 			socket.send(JSON.stringify({ play: true }));
