@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "npx tsx src/index",
+    "build": "npx tsx src/index",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
