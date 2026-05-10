@@ -1,4 +1,5 @@
 # Karakokey 🎤
+### MPOP Reverse II (Ryann Kim Sesgundo)
 
 Karakokey is a modern, web-based karaoke platform that leverages YouTube for its song library. It features a Svelte-powered frontend for a smooth user experience and a Node.js backend to handle search, streaming, and real-time synchronization via WebSockets.
 
@@ -99,3 +100,11 @@ The backend is configured for deployment on [Leapcell](https://leapcell.com/). E
 
 - **License:** This project is licensed under a [Non-Commercial License](LICENSE). It **must not** be commercialized or sold online.
 - **Changelog:** Stay updated with the latest changes in the [CHANGELOG.md](CHANGELOG.md).
+
+---
+
+## 🤖 AI Guide
+
+- **Claude AI:** Youtubei.js
+- **ChatGPT:** Design
+- **Gemini:** Websocket and documentation
