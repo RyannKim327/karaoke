@@ -42,27 +42,7 @@ const endpoints: serverProps = {
 		}
 
 		try {
-			// 1. Get YouTube stream info (contains URL)
-			const streamInfo = await play(id);
-			res.end(streamInfo)
-			return
-			// 2. Fetch actual video data from Googlevideo
-			const response = await fetch(streamInfo);
-
-			if (!response.body) {
-				throw new Error("No stream body received");
-			}
-
-			// 3. Set headers for video streaming
-			res.statusCode = 200;
-			res.setHeader("Content-Type", "video/mp4");
-			res.setHeader("Access-Control-Allow-Origin", "*");
-			res.setHeader("Cache-Control", "no-cache");
-
-			// 4. PIPE stream to response (THIS is the correct part)
-			const nodeStream = response.body as unknown as NodeJS.ReadableStream;
-			nodeStream.pipe(res);
-			res.end(nodeStream)
+			await play(id, res);
 		} catch (err) {
 			console.error(err);
 			res.statusCode = 500;
