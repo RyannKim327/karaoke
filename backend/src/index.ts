@@ -37,8 +37,7 @@ const endpoints: serverProps = {
 
 		if (!id) {
 			res.statusCode = 400;
-			res.setHeader("Content-Type", "application/json");
-			return res.end(JSON.stringify({ error: "Please enter video ID" }));
+			return res.end("Missing id");
 		}
 
 		try {

@@ -1,32 +1,47 @@
-import { ServerResponse } from "http";
-import { Innertube, Platform, Types } from "youtubei.js/web"
+import { IncomingMessage, ServerResponse } from "http";
+import { Clients, Innertube } from "youtubei.js"
+import { Readable } from "stream";
+
+let ytPromise: Promise<Innertube> | null = null;
+
+async function getYt() {
+	if (!ytPromise) {
+		ytPromise = Innertube.create();
+	}
+	return ytPromise;
+}
 
 export async function search(song: string) {
-	const yt = await Innertube.create()
+	const yt = await getYt();
 	song = song.replace(/karaoke/gi, "")
 	const result = await yt.search(`${song.trim()} karaoke`)
 	return result.videos.filter((v) => {
-		return v.type.toLowerCase().includes("video") && v.title.text.toLowerCase().includes("karaoke");
+		return v.type.toLowerCase().includes("video") &&
+			(v.title.text.toLowerCase().includes("karaoke") ||
+				v.title.text.toLowerCase().includes("minus one") ||
+				v.title.text.toLowerCase().includes("instrumental"))
 	});
 }
 
 
 export async function play(ytID: string, res: ServerResponse) {
-	const yt = await Innertube.create();
+	const yt = await getYt();
+	const info = await yt.getInfo(ytID, { client: "ANDROID" });
 
-	const stream = await yt.download(ytID, {
-		type: 'video+audio',
-		quality: 'best',
-		format: 'mp4',
+	if (!info.streaming_data) {
+		throw new Error(`No streaming data for ${ytID}`);
+	}
+
+	const dl = await info.download({
+		quality: "best",
+		type: "video+audio",
+		format: "mp4",
 	});
 
-	res.statusCode = 200;
-	res.setHeader('Content-Type', 'video/mp4');
-	res.setHeader('Access-Control-Allow-Origin', '*');
-	res.setHeader('Cache-Control', 'no-cache');
+	res.setHeader("Content-Type", "video/mp4");
+	res.setHeader("Accept-Ranges", "bytes");
 
-	for await (const chunk of stream) {
-		res.write(chunk);
-	}
-	res.end();
+	Readable.fromWeb(dl as any).pipe(res);
 }
+
+

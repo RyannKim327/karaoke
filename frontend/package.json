@@ -22,7 +22,6 @@
   },
   "dependencies": {
     "axios": "^1.16.0",
-    "svelte-spa-router": "^5.0.1",
-    "youtubei.js": "^17.0.1"
+    "svelte-spa-router": "^5.0.1"
   }
 }

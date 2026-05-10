@@ -1,7 +1,5 @@
 <script lang="ts">
-	import { Innertube } from "youtubei.js";
 	import { onMount, onDestroy } from "svelte";
-	import axios from "axios";
 
 	interface SongInfo {
 		title: string;
@@ -22,7 +20,12 @@
 	let currentBlobUrl: string | null = null;
 
 	function getUrl(videoId: string) {
-		source = `http://localhost:3000/play?id=${videoId}`;
+		if (sources.length > 0) {
+			source = videoId ? `http://localhost:3000/play?id=${videoId}` : "";
+		} else {
+			source = "";
+		}
+		sources.shift();
 	}
 
 	onMount(() => {
@@ -86,12 +89,15 @@
 <div class="relative w-full h-screen overflow-hidden bg-black">
 	{#if source}
 		<video
-			class="absolute inset-0 w-full h-full object-cover"
+			class="absolute inset-0 h-full w-full"
 			src={source}
-			autoplay
-			controls
+			autoplay={true}
+			controls={false}
 			playsinline
-		/>
+			onended={() => {
+				getUrl(sources[0].url);
+			}}
+		></video>
 	{:else}
 		<div
 			class="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-zinc-900 to-black"
