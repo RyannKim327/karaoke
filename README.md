@@ -1,47 +1,101 @@
-# Svelte + TS + Vite
+# Karakokey 🎤
 
-This template should help get you started developing with Svelte and TypeScript in Vite.
+Karakokey is a modern, web-based karaoke platform that leverages YouTube for its song library. It features a Svelte-powered frontend for a smooth user experience and a Node.js backend to handle search, streaming, and real-time synchronization via WebSockets.
 
-## Recommended IDE Setup
+## 🚀 Tech Stack
 
-[VS Code](https://code.visualstudio.com/) + [Svelte](https://marketplace.visualstudio.com/items?itemName=svelte.svelte-vscode).
+### Frontend
+- **Framework:** [Svelte 5](https://svelte.dev/)
+- **Build Tool:** [Vite](https://vitejs.dev/)
+- **Styling:** [Tailwind CSS](https://tailwindcss.com/)
+- **Routing:** [svelte-spa-router](https://github.com/luizpostiga/svelte-spa-router)
+- **HTTP Client:** [Axios](https://axios-http.com/)
+- **Language:** [TypeScript](https://www.typescriptlang.org/)
 
-## Need an official Svelte framework?
+### Backend
+- **Runtime:** [Node.js](https://nodejs.org/)
+- **Framework:** [Express](https://expressjs.com/)
+- **Real-time:** [WebSockets (ws)](https://github.com/websockets/ws)
+- **YouTube Integration:** [youtubei.js](https://github.com/LuanRT/YouTube.js)
+- **Language:** [TypeScript](https://www.typescriptlang.org/)
 
-Check out [SvelteKit](https://github.com/sveltejs/kit#readme), which is also powered by Vite. Deploy anywhere with its serverless-first approach and adapt to various platforms, with out of the box support for TypeScript, SCSS, and Less, and easily-added support for mdsvex, GraphQL, PostCSS, Tailwind CSS, and more.
+---
 
-## Technical considerations
+## 📁 Project Structure
 
-**Why use this over SvelteKit?**
-
-- It brings its own routing solution which might not be preferable for some users.
-- It is first and foremost a framework that just happens to use Vite under the hood, not a Vite app.
-
-This template contains as little as possible to get started with Vite + TypeScript + Svelte, while taking into account the developer experience with regards to HMR and intellisense. It demonstrates capabilities on par with the other `create-vite` templates and is a good starting point for beginners dipping their toes into a Vite + Svelte project.
-
-Should you later need the extended capabilities and extensibility provided by SvelteKit, the template has been structured similarly to SvelteKit so that it is easy to migrate.
-
-**Why `global.d.ts` instead of `compilerOptions.types` inside `jsconfig.json` or `tsconfig.json`?**
-
-Setting `compilerOptions.types` shuts out all other types not explicitly listed in the configuration. Using triple-slash references keeps the default TypeScript setting of accepting type information from the entire workspace, while also adding `svelte` and `vite/client` type information.
-
-**Why include `.vscode/extensions.json`?**
-
-Other templates indirectly recommend extensions via the README, but this file allows VS Code to prompt the user to install the recommended extension upon opening the project.
-
-**Why enable `allowJs` in the TS template?**
-
-While `allowJs: false` would indeed prevent the use of `.js` files in the project, it does not prevent the use of JavaScript syntax in `.svelte` files. In addition, it would force `checkJs: false`, bringing the worst of both worlds: not being able to guarantee the entire codebase is TypeScript, and also having worse typechecking for the existing JavaScript. In addition, there are valid use cases in which a mixed codebase may be relevant.
-
-**Why is HMR not preserving my local component state?**
-
-HMR state preservation comes with a number of gotchas! It has been disabled by default in both `svelte-hmr` and `@sveltejs/vite-plugin-svelte` due to its often surprising behavior. You can read the details [here](https://github.com/rixo/svelte-hmr#svelte-hmr).
-
-If you have state that's important to retain within a component, consider creating an external store which would not be replaced by HMR.
-
-```ts
-// store.ts
-// An extremely simple external store
-import { writable } from 'svelte/store'
-export default writable(0)
+```text
+karakokey/
+├── frontend/           # Svelte application
+│   ├── src/            # Components, routes, and assets
+│   ├── public/         # Static assets
+│   └── package.json    # Frontend dependencies and scripts
+├── backend/            # Express server
+│   ├── src/            # Server logic and YT integration
+│   ├── leapcell.yaml   # Leapcell deployment config
+│   └── package.json    # Backend dependencies and scripts
+├── CHANGELOG.md        # Track changes and updates
+├── LICENSE             # Non-Commercial License
+└── README.md           # Project documentation
 ```
+
+---
+
+## 🛠️ Getting Started
+
+### Prerequisites
+- Node.js (v18+)
+- npm
+
+### Installation
+
+1. Clone the repository:
+   ```bash
+   git clone <repository-url>
+   cd karakokey
+   ```
+
+2. Install dependencies for both frontend and backend:
+   ```bash
+   # Install Frontend
+   cd frontend && npm install
+   
+   # Install Backend
+   cd ../backend && npm install
+   ```
+
+### Running Locally
+
+**Start Backend:**
+```bash
+cd backend
+npm start
+```
+The server will start on `http://localhost:3000` (or the port defined in your environment).
+
+**Start Frontend:**
+```bash
+cd frontend
+npm run dev
+```
+Open `http://localhost:5173` in your browser.
+
+---
+
+## 🚢 Deployment
+
+### Frontend (GitHub Pages)
+The frontend is configured to deploy to GitHub Pages.
+```bash
+cd frontend
+npm run deploy
+```
+
+### Backend (Leapcell)
+The backend is configured for deployment on [Leapcell](https://leapcell.com/). Ensure your `leapcell.yaml` matches your environment needs and use the Leapcell CLI or dashboard to deploy.
+
+---
+
+## 📜 License & Changelog
+
+- **License:** This project is licensed under a [Non-Commercial License](LICENSE). It **must not** be commercialized or sold online.
+- **Changelog:** Stay updated with the latest changes in the [CHANGELOG.md](CHANGELOG.md).

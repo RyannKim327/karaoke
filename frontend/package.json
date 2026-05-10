@@ -2,6 +2,7 @@
   "name": "karakokey",
   "private": true,
   "version": "0.0.0",
+  "author": "RyannKim327",
   "type": "module",
   "homepage": "https://ryannkim327.github.io/karaoke",
   "scripts": {

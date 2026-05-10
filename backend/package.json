@@ -9,7 +9,7 @@
     "test": "echo \"error: no test specified\" && exit 1"
   },
   "keywords": [],
-  "author": "",
+  "author": "RyannKim327",
   "license": "ISC",
   "type": "commonjs",
   "devDependencies": {
