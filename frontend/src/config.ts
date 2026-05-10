@@ -1,2 +1,3 @@
-export const API_HOST = "https://karaoke-backend-32hw.onrender.com";
-export const WS_HOST = "wss://karaoke-backend-32hw.onrender.com";
+const HOST = "karakokey.leapcell.app"
+export const API_HOST = `https://${HOST}`;
+export const WS_HOST = `wss://${HOST}/ws`;

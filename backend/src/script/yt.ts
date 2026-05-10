@@ -16,10 +16,12 @@ export async function search(song: string) {
 	song = song.replace(/karaoke/gi, "")
 	const result = await yt.search(`${song.trim()} karaoke`)
 	return result.videos.filter((v) => {
+		if (!v.hasKey("title")) return false;
+		const title = (v as any).title.toString().toLowerCase();
 		return v.type.toLowerCase().includes("video") &&
-			((v.title.text.toLowerCase().includes("karaoke") && !v.title.text.toLowerCase().includes("#karaoke")) ||
-				v.title.text.toLowerCase().includes("minus one") ||
-				v.title.text.toLowerCase().includes("instrumental"))
+			((title.includes("karaoke") && !title.includes("#karaoke")) ||
+				title.includes("minus one") ||
+				title.includes("instrumental"))
 	});
 }
 
