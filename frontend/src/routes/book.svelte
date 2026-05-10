@@ -115,8 +115,8 @@
 						bind:value={search}
 						placeholder="Search songs..."
 						class="w-full rounded-2xl border border-white/10 bg-black/30 px-5 py-4 pr-12 text-white outline-none transition focus:border-red-400 focus:ring-2 focus:ring-red-500/30 placeholder:text-zinc-500"
+						onkeydown={(e) => e.key === "Enter" && searchSong()}
 					/>
-
 					<div
 						class="absolute right-4 top-1/2 -translate-y-1/2 text-zinc-500 cursor-pointer"
 						onclick={() => {

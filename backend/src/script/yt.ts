@@ -1,5 +1,5 @@
-import { IncomingMessage, ServerResponse } from "http";
-import { Clients, Innertube } from "youtubei.js"
+import { ServerResponse } from "http";
+import { Innertube } from "youtubei.js"
 import { Readable } from "stream";
 
 let ytPromise: Promise<Innertube> | null = null;
@@ -17,7 +17,7 @@ export async function search(song: string) {
 	const result = await yt.search(`${song.trim()} karaoke`)
 	return result.videos.filter((v) => {
 		return v.type.toLowerCase().includes("video") &&
-			(v.title.text.toLowerCase().includes("karaoke") ||
+			((v.title.text.toLowerCase().includes("karaoke") && !v.title.text.toLowerCase().includes("#karaoke")) ||
 				v.title.text.toLowerCase().includes("minus one") ||
 				v.title.text.toLowerCase().includes("instrumental"))
 	});
