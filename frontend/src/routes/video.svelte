@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { onMount, onDestroy } from "svelte";
 	import { API_HOST, WS_HOST } from "@/config";
+	import { YIN } from "pitchfinder";
 
 	interface SongInfo {
 		title: string;
@@ -9,6 +10,9 @@
 		check?: boolean;
 	}
 	export let params: { id: string };
+
+	const yin = YIN();
+
 	let socket: WebSocket;
 	let sources: SongInfo[] = [];
 	let source = "";
@@ -19,6 +23,10 @@
 	let score: number | null = null;
 	let showScore = false;
 	let started = false;
+	let framesWithPitch = 0;
+	let totalFrames = 0;
+	let analyzerActive = false;
+	let micStream: MediaStream | null = null;
 
 	function getScoreMessage(s: number) {
 		if (s >= 90)
@@ -38,30 +46,100 @@
 		return { msg: "Maybe stick to the shower... 🚿", color: "text-red-400" };
 	}
 
-	function generateScore(isNext?: boolean) {
-		// if (!isNext) {
-		score = Math.floor(Math.random() * 101);
+	function generateScore() {
+		if (totalFrames > 0) {
+			// Calculate score based on percentage of frames where pitch was detected
+			// We use a multiplier to make it a bit more generous
+			const ratio = framesWithPitch / totalFrames;
+			score = Math.min(100, Math.floor(ratio * 300)); // 33% detection = 100 score
+		} else {
+			score = Math.floor(Math.random() * 20) + 10; // Low random score if no data
+		}
+
 		showScore = true;
+		analyzerActive = false;
+
+		// Reset counters for next song
+		framesWithPitch = 0;
+		totalFrames = 0;
+
 		setTimeout(() => {
 			showScore = false;
 			score = null;
 		}, 4000);
-		// }
 	}
 
-	function getUrl(videoId: string) {
+	function audioAnalyzer(stream: MediaStream) {
+		if (analyzerActive) return;
+		analyzerActive = true;
+
+		const audio = new AudioContext();
+		const src = audio.createMediaStreamSource(stream);
+
+		const analyzer = audio.createAnalyser();
+		analyzer.fftSize = 2048;
+
+		src.connect(analyzer);
+
+		const buffer = new Float32Array(analyzer.fftSize);
+
+		function tick() {
+			if (!analyzerActive) {
+				audio.close();
+				return;
+			}
+
+			analyzer.getFloatTimeDomainData(buffer);
+
+			const pitch = yin(buffer);
+
+			if (pitch && pitch > 50 && pitch < 2000) {
+				// Basic filter for human voice range
+				framesWithPitch++;
+			}
+			totalFrames++;
+
+			requestAnimationFrame(tick);
+		}
+
+		tick();
+	}
+
+	async function getUrl(videoId: string) {
 		if (sources.length > 0) {
 			source = `${API_HOST}/play?id=${videoId}`;
 			setTimeout(() => {
 				if (video) video.play();
 			}, 500);
+
+			if (!micStream) {
+				micStream = await navigator.mediaDevices.getUserMedia({
+					audio: true,
+				});
+			}
+			audioAnalyzer(micStream);
 		} else {
 			source = "";
 		}
 	}
 
-	function nextSong(isNext: boolean) {
-		generateScore(isNext);
+	function nextSong() {
+		analyzerActive = false;
+		framesWithPitch = 0;
+		totalFrames = 0;
+		if (sources.length > 0) {
+			id = sources[0].url;
+			getUrl(id);
+		} else {
+			source = "";
+			id = "";
+			started = false;
+		}
+		sources.shift();
+	}
+
+	function nativeNextSong() {
+		generateScore();
 		setTimeout(() => {
 			if (sources.length > 0) {
 				id = sources[0].url;
@@ -76,8 +154,8 @@
 	}
 
 	function startPlay() {
-		if (!started) {
-			const id = sources[0].url;
+		if (!started && sources.length > 0) {
+			id = sources[0].url;
 			getUrl(id);
 			sources.shift();
 			started = true;
@@ -96,7 +174,7 @@
 			}
 		}
 		if (e.code === "ArrowRight") {
-			nextSong(true);
+			nextSong();
 		}
 	}
 
@@ -106,6 +184,7 @@
 		socket.onopen = () => {
 			console.log("Socket connected");
 			socket.send(JSON.stringify({ play: true }));
+			fullscreen();
 		};
 		socket.onmessage = (event: MessageEvent) => {
 			const data: SongInfo = JSON.parse(event.data);
@@ -126,7 +205,12 @@
 		window.removeEventListener("keydown", handleKeydown);
 		if (socket) socket.close();
 		if (currentBlobUrl) URL.revokeObjectURL(currentBlobUrl);
+		analyzerActive = false;
 	});
+
+	async function fullscreen() {
+		await document.documentElement.requestFullscreen();
+	}
 </script>
 
 <div class="relative w-full h-screen overflow-hidden bg-black">
@@ -140,7 +224,7 @@
 				if (!paused) video?.play();
 			}}
 			playsinline
-			onended={nextSong}
+			onended={nativeNextSong}
 			bind:this={video}
 		></video>
 	{:else}
