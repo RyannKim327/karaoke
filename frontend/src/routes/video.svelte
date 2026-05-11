@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { onMount, onDestroy } from "svelte";
 	import { API_HOST, WS_HOST } from "@/config";
+	import { YIN } from "pitchfinder";
 
 	interface SongInfo {
 		title: string;
@@ -9,6 +10,9 @@
 		check?: boolean;
 	}
 	export let params: { id: string };
+
+	const yin = YIN();
+
 	let socket: WebSocket;
 	let sources: SongInfo[] = [];
 	let source = "";
@@ -38,30 +42,79 @@
 		return { msg: "Maybe stick to the shower... 🚿", color: "text-red-400" };
 	}
 
-	function generateScore(isNext?: boolean) {
-		// if (!isNext) {
+	function generateScore() {
 		score = Math.floor(Math.random() * 101);
 		showScore = true;
 		setTimeout(() => {
 			showScore = false;
 			score = null;
 		}, 4000);
-		// }
 	}
 
-	function getUrl(videoId: string) {
+	function audioAnalyzer(stream) {
+		const audio = new AudioContext();
+		const src = audio.createMediaStreamSource(stream);
+
+		const analyzer = audio.createAnalyser();
+		analyzer.fftSize = 2048;
+
+		src.connect(analyzer);
+
+		const buffer = new Float32Array(analyzer.fftSize);
+
+		function tick() {
+			analyzer.getFloatTimeDomainData(buffer);
+
+			const pitch = yin(buffer);
+
+			if (pitch) {
+				console.log("Pitch:", pitch);
+				hzToMidi(pitch);
+			}
+
+			requestAnimationFrame(tick);
+		}
+
+		tick();
+	}
+
+	function getVideoStream() {
+		if (!video) return;
+		const stream = video.captureStream();
+		const audioCtx = new AudioContext();
+
+		const source = audioCtx.createMediaStreamSource(stream);
+	}
+
+	async function getUrl(videoId: string) {
 		if (sources.length > 0) {
 			source = `${API_HOST}/play?id=${videoId}`;
 			setTimeout(() => {
 				if (video) video.play();
 			}, 500);
+			const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+			audioAnalyzer(stream);
 		} else {
 			source = "";
 		}
 	}
 
-	function nextSong(isNext: boolean) {
-		generateScore(isNext);
+	function nextSong() {
+		setTimeout(() => {
+			if (sources.length > 0) {
+				id = sources[0].url;
+				getUrl(id);
+			} else {
+				source = "";
+				id = "";
+				started = false;
+			}
+			sources.shift();
+		}, 4000); // wait for score to show before next song
+	}
+
+	function nativeNextSong() {
+		generateScore();
 		setTimeout(() => {
 			if (sources.length > 0) {
 				id = sources[0].url;
@@ -84,6 +137,10 @@
 		}
 	}
 
+	function hzToMidi(hz) {
+		return 69 + 12 * Math.log2(hz / 440);
+	}
+
 	function handleKeydown(e: KeyboardEvent) {
 		if (e.code === "Space") {
 			e.preventDefault();
@@ -96,7 +153,7 @@
 			}
 		}
 		if (e.code === "ArrowRight") {
-			nextSong(true);
+			nextSong();
 		}
 	}
 
@@ -106,6 +163,7 @@
 		socket.onopen = () => {
 			console.log("Socket connected");
 			socket.send(JSON.stringify({ play: true }));
+			fullscreen();
 		};
 		socket.onmessage = (event: MessageEvent) => {
 			const data: SongInfo = JSON.parse(event.data);
@@ -127,6 +185,10 @@
 		if (socket) socket.close();
 		if (currentBlobUrl) URL.revokeObjectURL(currentBlobUrl);
 	});
+
+	async function fullscreen() {
+		await document.documentElement.requestFullscreen();
+	}
 </script>
 
 <div class="relative w-full h-screen overflow-hidden bg-black">
@@ -140,7 +202,7 @@
 				if (!paused) video?.play();
 			}}
 			playsinline
-			onended={nextSong}
+			onended={nativeNextSong}
 			bind:this={video}
 		></video>
 	{:else}

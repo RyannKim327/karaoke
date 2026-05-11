@@ -42,7 +42,7 @@ app.use((req, res) => {
 })
 
 // ✅ Attach WS to the SAME server (no separate port!)
-const wss = new WebSocketServer({ server })
+const wss = new WebSocketServer({ port: 8080 })
 
 const channels = new Map<string, Set<WebSocket & { isAlive: boolean }>>()
 
