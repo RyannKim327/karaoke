@@ -23,6 +23,10 @@
 	let score: number | null = null;
 	let showScore = false;
 	let started = false;
+	let framesWithPitch = 0;
+	let totalFrames = 0;
+	let analyzerActive = false;
+	let micStream: MediaStream | null = null;
 
 	function getScoreMessage(s: number) {
 		if (s >= 90)
@@ -43,15 +47,32 @@
 	}
 
 	function generateScore() {
-		score = Math.floor(Math.random() * 101);
+		if (totalFrames > 0) {
+			// Calculate score based on percentage of frames where pitch was detected
+			// We use a multiplier to make it a bit more generous
+			const ratio = framesWithPitch / totalFrames;
+			score = Math.min(100, Math.floor(ratio * 300)); // 33% detection = 100 score
+		} else {
+			score = Math.floor(Math.random() * 20) + 10; // Low random score if no data
+		}
+
 		showScore = true;
+		analyzerActive = false;
+
+		// Reset counters for next song
+		framesWithPitch = 0;
+		totalFrames = 0;
+
 		setTimeout(() => {
 			showScore = false;
 			score = null;
 		}, 4000);
 	}
 
-	function audioAnalyzer(stream) {
+	function audioAnalyzer(stream: MediaStream) {
+		if (analyzerActive) return;
+		analyzerActive = true;
+
 		const audio = new AudioContext();
 		const src = audio.createMediaStreamSource(stream);
 
@@ -63,27 +84,25 @@
 		const buffer = new Float32Array(analyzer.fftSize);
 
 		function tick() {
+			if (!analyzerActive) {
+				audio.close();
+				return;
+			}
+
 			analyzer.getFloatTimeDomainData(buffer);
 
 			const pitch = yin(buffer);
 
-			if (pitch) {
-				console.log("Pitch:", pitch);
-				hzToMidi(pitch);
+			if (pitch && pitch > 50 && pitch < 2000) {
+				// Basic filter for human voice range
+				framesWithPitch++;
 			}
+			totalFrames++;
 
 			requestAnimationFrame(tick);
 		}
 
 		tick();
-	}
-
-	function getVideoStream() {
-		if (!video) return;
-		const stream = video.captureStream();
-		const audioCtx = new AudioContext();
-
-		const source = audioCtx.createMediaStreamSource(stream);
 	}
 
 	async function getUrl(videoId: string) {
@@ -92,25 +111,31 @@
 			setTimeout(() => {
 				if (video) video.play();
 			}, 500);
-			const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-			audioAnalyzer(stream);
+
+			if (!micStream) {
+				micStream = await navigator.mediaDevices.getUserMedia({
+					audio: true,
+				});
+			}
+			audioAnalyzer(micStream);
 		} else {
 			source = "";
 		}
 	}
 
 	function nextSong() {
-		setTimeout(() => {
-			if (sources.length > 0) {
-				id = sources[0].url;
-				getUrl(id);
-			} else {
-				source = "";
-				id = "";
-				started = false;
-			}
-			sources.shift();
-		}, 4000); // wait for score to show before next song
+		analyzerActive = false;
+		framesWithPitch = 0;
+		totalFrames = 0;
+		if (sources.length > 0) {
+			id = sources[0].url;
+			getUrl(id);
+		} else {
+			source = "";
+			id = "";
+			started = false;
+		}
+		sources.shift();
 	}
 
 	function nativeNextSong() {
@@ -129,16 +154,12 @@
 	}
 
 	function startPlay() {
-		if (!started) {
-			const id = sources[0].url;
+		if (!started && sources.length > 0) {
+			id = sources[0].url;
 			getUrl(id);
 			sources.shift();
 			started = true;
 		}
-	}
-
-	function hzToMidi(hz) {
-		return 69 + 12 * Math.log2(hz / 440);
 	}
 
 	function handleKeydown(e: KeyboardEvent) {
@@ -184,6 +205,7 @@
 		window.removeEventListener("keydown", handleKeydown);
 		if (socket) socket.close();
 		if (currentBlobUrl) URL.revokeObjectURL(currentBlobUrl);
+		analyzerActive = false;
 	});
 
 	async function fullscreen() {
