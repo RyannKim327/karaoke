@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { onMount, onDestroy } from "svelte";
+	import { fade } from "svelte/transition";
 	import { API_HOST, WS_HOST } from "@/config";
 	import { YIN } from "pitchfinder";
 
@@ -27,6 +28,23 @@
 	let totalFrames = 0;
 	let analyzerActive = false;
 	let micStream: MediaStream | null = null;
+	let headerMinimized = false;
+	let headerTimeout: any;
+
+	function startHeaderTimer() {
+		headerMinimized = false;
+		if (headerTimeout) clearTimeout(headerTimeout);
+		headerTimeout = setTimeout(() => {
+			if (!paused) {
+				headerMinimized = true;
+			}
+		}, 10000);
+	}
+
+	function showHeader() {
+		headerMinimized = false;
+		if (headerTimeout) clearTimeout(headerTimeout);
+	}
 
 	function getScoreMessage(s: number) {
 		if (s >= 90)
@@ -47,7 +65,7 @@
 	}
 
 	function generateScore() {
-		video.pause();
+		video?.pause();
 		if (totalFrames > 0) {
 			// Calculate score based on percentage of frames where pitch was detected
 			// We use a multiplier to make it a bit more generous
@@ -107,6 +125,8 @@
 	}
 
 	async function getUrl(videoId: string) {
+		paused = false;
+		startHeaderTimer();
 		if (sources.length > 0) {
 			source = `${API_HOST}/play?id=${videoId}`;
 			setTimeout(() => {
@@ -125,7 +145,9 @@
 	}
 
 	function nextSong() {
-		video.pause();
+		paused = true;
+		showHeader();
+		video?.pause();
 		analyzerActive = false;
 		framesWithPitch = 0;
 		totalFrames = 0;
@@ -141,8 +163,11 @@
 	}
 
 	function nativeNextSong() {
-		video.pause();
+		paused = true;
+		showHeader();
+		video?.pause();
 		generateScore();
+		source = "";
 		setTimeout(() => {
 			if (sources.length > 0) {
 				id = sources[0].url;
@@ -166,19 +191,24 @@
 	}
 
 	function handleKeydown(e: KeyboardEvent) {
+		if (showScore) return;
 		if (e.code === "Space") {
 			e.preventDefault();
 			if (paused) {
 				paused = false;
 				video?.play();
+				startHeaderTimer();
 			} else {
 				paused = true;
 				video?.pause();
+				showHeader();
 			}
 		}
 		if (e.code === "ArrowRight") {
-			video.pause();
 			nextSong();
+		}
+		if (e.code === "KeyF") {
+			fullscreen();
 		}
 	}
 
@@ -209,6 +239,7 @@
 		window.removeEventListener("keydown", handleKeydown);
 		if (socket) socket.close();
 		if (currentBlobUrl) URL.revokeObjectURL(currentBlobUrl);
+		if (headerTimeout) clearTimeout(headerTimeout);
 		analyzerActive = false;
 	});
 
@@ -225,7 +256,7 @@
 			autoplay={true}
 			controls={false}
 			onpause={() => {
-				if (!paused) video?.play();
+				if (!paused && source) video?.play();
 			}}
 			playsinline
 			onended={nativeNextSong}
@@ -235,10 +266,38 @@
 		<div
 			class="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-zinc-900 to-black"
 		>
-			<div class="text-center">
-				<div class="text-6xl mb-4">🎤</div>
-				<h1 class="text-white text-3xl font-bold">Kara Kokey</h1>
-				<p class="text-zinc-400 mt-2">Waiting for songs...</p>
+			<div class="text-center flex flex-col items-center">
+				<div class="text-6xl mb-6">🎤</div>
+				<h1 class="text-white text-5xl font-black tracking-tight mb-2">
+					Kara Kokey
+				</h1>
+				<p class="text-zinc-400 text-lg mb-8">Scan to join and add songs</p>
+
+				<div
+					class="p-2 bg-white rounded-lg shadow-[0_0_50px_rgba(255,255,255,0.1)] mb-8"
+				>
+					<img
+						src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data={encodeURIComponent(
+							window.location.origin +
+								window.location.pathname +
+								'#/book/' +
+								params.id,
+						)}"
+						alt="QR Code"
+						class="w-25 h-25"
+					/>
+				</div>
+
+				<div class="flex flex-col items-center gap-1">
+					<p
+						class="text-zinc-500 text-sm font-medium uppercase tracking-widest"
+					>
+						Room ID
+					</p>
+					<p class="text-white text-2xl font-mono font-bold">
+						{params.id.toUpperCase()}
+					</p>
+				</div>
 			</div>
 		</div>
 	{/if}
@@ -260,24 +319,29 @@
 
 	<div class="absolute top-0 left-0 w-full p-4 md:p-6 z-10">
 		<div
-			class="flex items-center gap-3 rounded-2xl border border-white/10 bg-black/40 backdrop-blur-xl px-4 py-3 shadow-2xl overflow-hidden"
+			class="flex items-center gap-3 px-4 py-3 overflow-hidden transition-all duration-500"
 		>
 			<div
 				class="shrink-0 rounded-xl bg-red-500 px-4 py-2 text-sm font-bold tracking-wider text-white shadow-lg"
 			>
 				{params.id.toUpperCase()}
 			</div>
-			<div class="min-w-0 flex-1 overflow-hidden">
-				<p
-					class="truncate whitespace-nowrap text-sm md:text-base text-white/90"
+			{#if !headerMinimized}
+				<div
+					class="min-w-0 flex-1 overflow-hidden"
+					transition:fade={{ duration: 300 }}
 				>
-					{#if sources.length > 0}
-						{sources.map((s) => s.title).join(", ")}
-					{:else}
-						No songs in queue yet...
-					{/if}
-				</p>
-			</div>
+					<p
+						class="truncate whitespace-nowrap text-sm md:text-base text-white/90"
+					>
+						{#if sources.length > 0}
+							{sources.map((s) => s.title).join(", ")}
+						{:else}
+							No songs in queue yet...
+						{/if}
+					</p>
+				</div>
+			{/if}
 		</div>
 	</div>
 
