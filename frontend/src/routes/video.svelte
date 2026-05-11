@@ -47,6 +47,7 @@
 	}
 
 	function generateScore() {
+		video.pause();
 		if (totalFrames > 0) {
 			// Calculate score based on percentage of frames where pitch was detected
 			// We use a multiplier to make it a bit more generous
@@ -66,7 +67,7 @@
 		setTimeout(() => {
 			showScore = false;
 			score = null;
-		}, 4000);
+		}, 5000);
 	}
 
 	function audioAnalyzer(stream: MediaStream) {
@@ -124,6 +125,7 @@
 	}
 
 	function nextSong() {
+		video.pause();
 		analyzerActive = false;
 		framesWithPitch = 0;
 		totalFrames = 0;
@@ -139,6 +141,7 @@
 	}
 
 	function nativeNextSong() {
+		video.pause();
 		generateScore();
 		setTimeout(() => {
 			if (sources.length > 0) {
@@ -174,6 +177,7 @@
 			}
 		}
 		if (e.code === "ArrowRight") {
+			video.pause();
 			nextSong();
 		}
 	}
