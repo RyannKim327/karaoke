@@ -1,7 +1,7 @@
 {
-  "name": "karakokey",
+  "name": "frontend",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.1.0",
   "author": "RyannKim327",
   "type": "module",
   "homepage": "https://ryannkim327.github.io/karaoke",

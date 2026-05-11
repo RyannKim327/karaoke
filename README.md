@@ -91,14 +91,11 @@ cd frontend
 npm run deploy
 ```
 
-### Backend (Leapcell)
-The backend is configured for deployment on [Leapcell](https://leapcell.com/). Ensure your `leapcell.yaml` matches your environment needs and use the Leapcell CLI or dashboard to deploy.
-
 ---
 
 ## 📜 License & Changelog
 
-- **License:** This project is licensed under a [Non-Commercial License](LICENSE). It **must not** be commercialized or sold online.
+- **License:** This project is licensed under a [Non-Commercial License](LICENSE.md). It **must not** be commercialized or sold online.
 - **Changelog:** Stay updated with the latest changes in the [CHANGELOG.md](CHANGELOG.md).
 
 ---
