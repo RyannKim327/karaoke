@@ -69,7 +69,7 @@ wss.on("connection", (ws: WebSocket & { isAlive: boolean }, req) => {
 })
 
 // ✅ Bind to 0.0.0.0 so your phone can reach it
-server.listen(port, "0.0.0.0", () => {
+server.listen(port, () => {
 	console.log(`Listening on http://0.0.0.0:${port}`)
 	console.log(`WebSocket on ws://0.0.0.0:${port}`)
 })
