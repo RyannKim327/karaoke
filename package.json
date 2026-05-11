@@ -1,0 +1,10 @@
+{
+  "scripts": {
+    "backend": "npx gh-pages -d ./backend -b backend",
+    "predeploy": "cd frontend && npm run build",
+    "deploy": "gh-pages -d frontend/dist -b frontend && cd .."
+  },
+  "dependencies": {
+    "gh-pages": "^6.3.0"
+  }
+}

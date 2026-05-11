@@ -9,9 +9,7 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "check": "svelte-check --tsconfig ./tsconfig.app.json && tsc -p tsconfig.node.json",
-    "predeploy": "npm run build",
-    "deploy": "gh-pages -d dist -b frontend"
+    "check": "svelte-check --tsconfig ./tsconfig.app.json && tsc -p tsconfig.node.json"
   },
   "devDependencies": {
     "@sveltejs/vite-plugin-svelte": "^7.0.0",
@@ -26,7 +24,6 @@
   },
   "dependencies": {
     "axios": "^1.16.0",
-    "gh-pages": "^6.3.0",
     "svelte-spa-router": "^5.0.1"
   }
 }
