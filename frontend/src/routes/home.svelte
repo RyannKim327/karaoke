@@ -51,7 +51,7 @@
 					type="text"
 					bind:value={roomCode}
 					placeholder="Enter room code"
-					class="w-full rounded-xl bg-zinc-900/70 border border-zinc-700 px-4 py-3 outline-none transition focus:border-red-400 focus:ring-2 focus:ring-red-500/30 placeholder:text-zinc-500"
+					class="w-full rounded-xl bg-zinc-900/70 border border-zinc-700 px-4 py-3 outline-none transition focus:border-red-400 focus:ring-2 focus:ring-red-500/30 placeholder:text-zinc-500 uppercase"
 				/>
 			</div>
 
