@@ -1,5 +1,0 @@
-runtime: node
-startCommand: npm start
-buildCommand: npm install
-port: 8080
-memory: 512mb
