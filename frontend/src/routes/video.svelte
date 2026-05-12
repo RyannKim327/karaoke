@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { onMount, onDestroy } from "svelte";
 	import { fade } from "svelte/transition";
-	import { API_HOST, WS_HOST } from "@/config";
+	import { API_HOST, WS_HOST } from "@/lib/config";
 	import { YIN } from "pitchfinder";
 
 	interface SongInfo {
@@ -128,7 +128,7 @@
 		paused = false;
 		startHeaderTimer();
 		if (sources.length > 0) {
-			source = `${API_HOST}/play?id=${videoId}`;
+			source = videoId;
 			setTimeout(() => {
 				if (video) video.play();
 			}, 500);
@@ -252,7 +252,7 @@
 	{#if source}
 		<video
 			class="absolute inset-0 h-full w-full"
-			src={source}
+			src={`${API_HOST}/play?id=${source}`}
 			autoplay={true}
 			controls={false}
 			onpause={() => {
