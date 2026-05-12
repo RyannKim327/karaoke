@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { onMount } from "svelte";
 	import axios from "axios";
-	import { API_HOST, WS_HOST } from "@/config";
+	import { API_HOST, WS_HOST } from "@/lib/config";
 
 	interface SongInfo {
 		title: string;
@@ -20,7 +20,7 @@
 
 	onMount(() => {
 		socket = new WebSocket(
-			`${WS_HOST}/${params.id}`,
+			`${WS_HOST}/${params.id.toLowerCase()}`,
 		);
 
 		socket.onopen = () => {
