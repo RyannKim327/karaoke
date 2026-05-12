@@ -18,7 +18,7 @@
 	let sources: SongInfo[] = [];
 	let source = "";
 	let id = "";
-	let video;
+	let video: HTMLVideoElement;
 	let paused = false;
 	let currentBlobUrl: string | null = null;
 	let score: number | null = null;
@@ -28,23 +28,6 @@
 	let totalFrames = 0;
 	let analyzerActive = false;
 	let micStream: MediaStream | null = null;
-	let headerMinimized = false;
-	let headerTimeout: any;
-
-	function startHeaderTimer() {
-		headerMinimized = false;
-		if (headerTimeout) clearTimeout(headerTimeout);
-		headerTimeout = setTimeout(() => {
-			if (!paused) {
-				headerMinimized = true;
-			}
-		}, 10000);
-	}
-
-	function showHeader() {
-		headerMinimized = false;
-		if (headerTimeout) clearTimeout(headerTimeout);
-	}
 
 	function getScoreMessage(s: number) {
 		if (s >= 90)
@@ -126,7 +109,6 @@
 
 	async function getUrl(videoId: string) {
 		paused = false;
-		startHeaderTimer();
 		if (sources.length > 0) {
 			source = videoId;
 			setTimeout(() => {
@@ -146,7 +128,6 @@
 
 	function nextSong() {
 		paused = true;
-		showHeader();
 		video?.pause();
 		analyzerActive = false;
 		framesWithPitch = 0;
@@ -164,7 +145,6 @@
 
 	function nativeNextSong() {
 		paused = true;
-		showHeader();
 		video?.pause();
 		generateScore();
 		source = "";
@@ -214,25 +194,27 @@
 
 	onMount(() => {
 		window.addEventListener("keydown", handleKeydown);
-		socket = new WebSocket(`${WS_HOST}/${params.id}`);
+		socket = new WebSocket(`${WS_HOST}/${params.id.toLowerCase()}`);
 		socket.onopen = () => {
-			console.log("Socket connected");
 			socket.send(JSON.stringify({ play: true }));
 			fullscreen();
 		};
 		socket.onmessage = (event: MessageEvent) => {
 			const data: SongInfo = JSON.parse(event.data);
-			console.log("Received:", data);
 			if (data.check) {
 				socket.send(JSON.stringify({ play: true }));
+				fullscreen();
 			}
 			if (data.title) {
 				sources = [...sources, data];
 				startPlay();
+				fullscreen();
 			}
 		};
 		socket.onerror = (error: Event) => console.error("Socket error:", error);
-		socket.onclose = () => console.log("Socket disconnected");
+		socket.onclose = () => {
+			console.log("Socket disconnected");
+		};
 	});
 
 	onDestroy(() => {
@@ -326,22 +308,21 @@
 			>
 				{params.id.toUpperCase()}
 			</div>
-			{#if !headerMinimized}
-				<div
-					class="min-w-0 flex-1 overflow-hidden"
-					transition:fade={{ duration: 300 }}
+			<div
+				class="min-w-0 flex-1 overflow-hidden"
+				transition:fade={{ duration: 300 }}
+			>
+				<p
+					class="truncate whitespace-nowrap text-sm md:text-base text-white/90
+		[text-shadow:_-1px_-1px_0_#000,_1px_-1px_0_#000,_-1px_1px_0_#000,_1px_1px_0_#000]"
 				>
-					<p
-						class="truncate whitespace-nowrap text-sm md:text-base text-white/90"
-					>
-						{#if sources.length > 0}
-							{sources.map((s) => s.title).join(", ")}
-						{:else}
-							No songs in queue yet...
-						{/if}
-					</p>
-				</div>
-			{/if}
+					{#if sources.length > 0}
+						{sources.map((s) => s.title).join(", ")}
+					{:else}
+						No songs in queue yet...
+					{/if}
+				</p>
+			</div>
 		</div>
 	</div>
 

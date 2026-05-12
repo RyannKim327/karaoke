@@ -20,7 +20,7 @@
 
 	onMount(() => {
 		socket = new WebSocket(
-			`${WS_HOST}/${params.id}`,
+			`${WS_HOST}/${params.id.toLowerCase()}`,
 		);
 
 		socket.onopen = () => {
