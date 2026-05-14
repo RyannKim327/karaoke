@@ -1,0 +1,59 @@
+name: Web Deployment
+
+on:
+  push:
+    branches:
+      - main
+
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on:
+      ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v2
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: Config of Git
+        run: |
+          git config user.name "${{ secrets.NAME }}"
+          git config user.email "${{ secrets.EMAIL }}"
+
+      - name: Fetch and Pull
+        run: |
+          git fetch origin main
+          git pull origin main
+      
+      - name: Remoting Github
+        run: |
+          git remote set-url origin https://x-access-token:${{ secrets.API_GITHUB_TOKEN }}@github.com/${{ github.repository }}.git
+
+      - name: Installing Dependencies and Deployment in frontend
+        run: |
+          cd frontend
+          npm install --legacy-peer-deps
+          npm install gh-pages
+          npm audit fix --legacy-peer-deps
+          npm run build
+          npx gh-pages -b frontend -d ./frontend/dist -m '${{ github.event.head_commit.message }}'
+          cd ..
+
+      - name: Installing Dependencies and Deployment in backend
+        run: |
+          cd backend
+          npm install --legacy-peer-deps
+          npm install gh-pages
+          npm audit fix --legacy-peer-deps
+          npx gh-pages -b backend -d ./backend -m '${{ github.event.head_commit.message }}'
+          cd ..
+
+        env:
+          API_GITHUB_TOKEN: ${{ secrets.API_GITHUB_TOKEN }}
