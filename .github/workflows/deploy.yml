@@ -38,9 +38,9 @@ jobs:
 
       - name: Installing Dependencies and Deployment in frontend
         run: |
+          npm install gh-pages
           cd frontend
           npm install --legacy-peer-deps
-          npm install gh-pages
           npm audit fix --legacy-peer-deps
           npm run build
           npx gh-pages -b frontend -d ./dist -m '${{ github.event.head_commit.message }}'
@@ -48,9 +48,9 @@ jobs:
 
       - name: Installing Dependencies and Deployment in backend
         run: |
+          npm install gh-pages
           cd backend
           npm install --legacy-peer-deps
-          npm install gh-pages
           npm audit fix --legacy-peer-deps
           npx gh-pages -b backend -d ./backend -m '${{ github.event.head_commit.message }}'
           cd ..
