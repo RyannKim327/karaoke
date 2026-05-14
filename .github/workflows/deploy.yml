@@ -52,7 +52,7 @@ jobs:
           cd backend
           npm install --legacy-peer-deps
           npm audit fix --legacy-peer-deps
-          npx gh-pages -b backend -d ./backend -m '${{ github.event.head_commit.message }}'
+          npx gh-pages -b backend -d ./ -m '${{ github.event.head_commit.message }}'
           cd ..
 
         env:
