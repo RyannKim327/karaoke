@@ -21,6 +21,9 @@
 =======
     "@types/express": "^5.0.6",
     "@types/node": "^25.7.0",
+<<<<<<< HEAD
+>>>>>>> 8a2dfa8 (05-14-26 16:02 [update dependecies])
+=======
 >>>>>>> 8a2dfa8 (05-14-26 16:02 [update dependecies])
     "@types/ws": "^8.18.1",
     "ts-node": "^10.9.2",
@@ -37,6 +40,9 @@
     "hono": "^4.12.19",
 =======
     "express": "^5.2.1",
+<<<<<<< HEAD
+>>>>>>> 8a2dfa8 (05-14-26 16:02 [update dependecies])
+=======
 >>>>>>> 8a2dfa8 (05-14-26 16:02 [update dependecies])
     "ws": "^8.20.1",
     "youtubei.js": "^17.0.1"
