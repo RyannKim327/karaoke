@@ -43,7 +43,7 @@ jobs:
           npm install gh-pages
           npm audit fix --legacy-peer-deps
           npm run build
-          npx gh-pages -b frontend -d ./frontend/dist -m '${{ github.event.head_commit.message }}'
+          npx gh-pages -b frontend -d ./dist -m '${{ github.event.head_commit.message }}'
           cd ..
 
       - name: Installing Dependencies and Deployment in backend
