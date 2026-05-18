@@ -42,7 +42,7 @@ app.use((req, res) => {
 })
 
 // ✅ Attach WS to the SAME server (no separate port!)
-const wss = new WebSocketServer({ port: 8080 })
+const wss = new WebSocketServer({ server })
 
 const channels = new Map<string, Set<WebSocket & { isAlive: boolean }>>()
 
@@ -69,7 +69,7 @@ wss.on("connection", (ws: WebSocket & { isAlive: boolean }, req) => {
 })
 
 // ✅ Bind to 0.0.0.0 so your phone can reach it
-server.listen(port as number, "0.0.0.0", () => {
+server.listen(port as number, () => {
 	console.log(`Listening on http://0.0.0.0:${port}`)
 	console.log(`WebSocket on ws://0.0.0.0:${port}`)
 })
