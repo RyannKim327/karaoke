@@ -1,4 +1,4 @@
-const HOST = "192.168.0.100:3000" // "karakokey.leapcell.app"
-const WS = "192.168.0.100:8080" // "karaoke-ls7t.onrender.com"
-export const API_HOST = `http://${HOST}`;
-export const WS_HOST = `ws://${WS}`;
+const HOST = "karakokey.osc-fr1.scalingo.io"
+const WS = "karakokey.osc-fr1.scalingo.io"
+export const API_HOST = `https://${HOST}`;
+export const WS_HOST = `wss://${WS}`;
