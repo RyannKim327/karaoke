@@ -1,17 +1,47 @@
-import { serve } from "@hono/node-server"
+import express from "express"
+import cors from "cors"
+import { createServer } from "http"
 import { WebSocketServer, WebSocket } from "ws"
-import { app } from "./app.js"
+import { play, search } from "./script/yt"
 
-const port = Number(process.env.PORT) || 3000
+const app = express()
+const server = createServer(app)
+const port = process.env.PORT || 3000
 
-const server = serve({
-	fetch: app.fetch,
-	port
-}, (info) => {
-	console.log(`Listening on http://localhost:${info.port}`)
+app.use(cors())
+
+app.get("/", (req, res) => {
+	res.json({ response: "Server currently running" })
 })
 
-// Attach WS to the same server port if possible, or a separate one
+app.get("/search", async (req, res) => {
+	const q = req.query.q
+	if (typeof q !== "string") {
+		return res.status(400).json({ error: "Please provide a valid search query" })
+	}
+	const lists = await search(q)
+	res.json(lists)
+})
+
+app.get("/play", async (req, res) => {
+	const id = req.query.id
+	if (typeof id !== "string") {
+		return res.status(400).send("Missing or invalid id")
+	}
+	try {
+		await play(id, res)
+	} catch (err) {
+		console.error(err)
+		res.status(500).send("Failed to stream video")
+	}
+})
+
+// 404 handler
+app.use((req, res) => {
+	res.status(404).json({ error: "Endpoint not found" })
+})
+
+// ✅ Attach WS to the SAME server (no separate port!)
 const wss = new WebSocketServer({ port: 8080 })
 
 const channels = new Map<string, Set<WebSocket & { isAlive: boolean }>>()
@@ -36,4 +66,10 @@ wss.on("connection", (ws: WebSocket & { isAlive: boolean }, req) => {
 		channels.get(channel)?.delete(ws)
 		console.log(`Client disconnected from channel: ${channel}`)
 	})
+})
+
+// ✅ Bind to 0.0.0.0 so your phone can reach it
+server.listen(port as number, "0.0.0.0", () => {
+	console.log(`Listening on http://0.0.0.0:${port}`)
+	console.log(`WebSocket on ws://0.0.0.0:${port}`)
 })
