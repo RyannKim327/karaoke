@@ -107,10 +107,10 @@
 		tick();
 	}
 
-	async function getUrl(videoId: string) {
+	async function getUrl(link: string) {
 		paused = false;
 		if (sources.length > 0) {
-			source = videoId;
+			source = link;
 			setTimeout(() => {
 				if (video) video.play();
 			}, 500);

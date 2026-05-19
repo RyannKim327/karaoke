@@ -2,7 +2,8 @@ import express from "express"
 import cors from "cors"
 import { createServer } from "http"
 import { WebSocketServer, WebSocket } from "ws"
-import { play, search } from "./script/yt"
+//import { play } from "./script/yt"
+import { play, search } from "./script/tubidy"
 
 const app = express()
 const server = createServer(app)
@@ -29,7 +30,9 @@ app.get("/play", async (req, res) => {
 		return res.status(400).send("Missing or invalid id")
 	}
 	try {
-		await play(id, res)
+		// await play(id, res)
+		const p = await play(id)
+		res.json(p)
 	} catch (err) {
 		console.error(err)
 		res.status(500).send("Failed to stream video")
