@@ -19,9 +19,7 @@
 	let songs: Record<string, any>[] = [];
 
 	onMount(() => {
-		socket = new WebSocket(
-			`${WS_HOST}/${params.id.toLowerCase()}`,
-		);
+		socket = new WebSocket(`${WS_HOST}/${params.id.toLowerCase()}`);
 
 		socket.onopen = () => {
 			console.log("Initiated");
@@ -71,9 +69,7 @@
 	}
 
 	async function searchSong() {
-		const { data } = await axios.get(
-			`${API_HOST}/search?q=${search}`,
-		);
+		const { data } = await axios.get(`${API_HOST}/search?q=${search}`);
 		songs = data;
 	}
 </script>
@@ -138,7 +134,7 @@
 					>
 						<div class="min-w-0">
 							<h2 class="truncate text-lg font-semibold text-white">
-								{song.title.text}
+								{song.title}
 							</h2>
 
 							<p class="text-sm text-zinc-500 truncate">Ready to queue</p>
@@ -148,8 +144,8 @@
 							class="ml-4 flex h-11 w-11 items-center justify-center rounded-xl bg-red-500 text-2xl font-bold text-white shadow-lg shadow-red-500/20 transition hover:scale-105 hover:bg-red-400 active:scale-95"
 							onclick={() =>
 								send({
-									title: song.title.text,
-									url: song.video_id,
+									title: song.title,
+									url: song.id,
 								})}
 						>
 							+

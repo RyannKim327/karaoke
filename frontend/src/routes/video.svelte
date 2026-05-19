@@ -3,6 +3,7 @@
 	import { fade } from "svelte/transition";
 	import { API_HOST, WS_HOST } from "@/lib/config";
 	import { YIN } from "pitchfinder";
+	import axios from "axios";
 
 	interface SongInfo {
 		title: string;
@@ -107,10 +108,11 @@
 		tick();
 	}
 
-	async function getUrl(videoId: string) {
+	async function getUrl(link: string) {
 		paused = false;
 		if (sources.length > 0) {
-			source = videoId;
+			const { data } = await axios.get(`${API_HOST}/play?id=${link}`);
+			source = data.url;
 			setTimeout(() => {
 				if (video) video.play();
 			}, 500);
@@ -234,7 +236,7 @@
 	{#if source}
 		<video
 			class="absolute inset-0 h-full w-full"
-			src={`${API_HOST}/play?id=${source}`}
+			src={source}
 			autoplay={true}
 			controls={false}
 			onpause={() => {
