@@ -58,7 +58,7 @@ export async function play(id: string) {
 	})
 
 	return {
-		play,
+		url: play,
 		download
 	}
 }

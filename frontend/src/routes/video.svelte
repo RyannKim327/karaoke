@@ -234,7 +234,7 @@
 	{#if source}
 		<video
 			class="absolute inset-0 h-full w-full"
-			src={`${API_HOST}/play?id=${source}`}
+			src={source}
 			autoplay={true}
 			controls={false}
 			onpause={() => {

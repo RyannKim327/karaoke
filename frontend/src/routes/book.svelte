@@ -19,9 +19,7 @@
 	let songs: Record<string, any>[] = [];
 
 	onMount(() => {
-		socket = new WebSocket(
-			`${WS_HOST}/${params.id.toLowerCase()}`,
-		);
+		socket = new WebSocket(`${WS_HOST}/${params.id.toLowerCase()}`);
 
 		socket.onopen = () => {
 			console.log("Initiated");
@@ -71,9 +69,7 @@
 	}
 
 	async function searchSong() {
-		const { data } = await axios.get(
-			`${API_HOST}/search?q=${search}`,
-		);
+		const { data } = await axios.get(`${API_HOST}/search?q=${search}`);
 		songs = data;
 	}
 </script>
