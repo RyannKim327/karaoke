@@ -44,29 +44,45 @@ app.use((req, res) => {
 })
 
 // ✅ Attach WS to the SAME server (no separate port!)
-const wss = new WebSocketServer({ server })
+const wss = new WebSocketServer({ port: 8080 })
 
-const channels = new Map<string, Set<WebSocket & { isAlive: boolean }>>()
+type ExtendedWebSocket = WebSocket & { isAlive: boolean; role?: string }
+const channels = new Map<string, Set<ExtendedWebSocket>>()
 
-wss.on("connection", (ws: WebSocket & { isAlive: boolean }, req) => {
-	const channel = req.url?.replace(/^\/ws\/?/, "") || "default"
+wss.on("connection", (ws: ExtendedWebSocket, req) => {
+	const url = new URL(req.url || "", `https://${req.headers.host}`)
+	const channel = url.pathname.replace(/^\/ws\/?/, "") || "default"
+	const role = url.searchParams.get("role") || "book"
 
 	if (!channels.has(channel)) {
 		channels.set(channel, new Set())
 	}
-	channels.get(channel)!.add(ws)
+
+	const clients = channels.get(channel)!
+
+	if (role === "video") {
+		const hasVideo = Array.from(clients).some((client) => client.role === "video")
+		if (hasVideo) {
+			console.log(`Connection rejected: Video device already exists in channel ${channel}`)
+			ws.close(1008, "Video device already connected")
+			return
+		}
+	}
+
+	ws.role = role
+	clients.add(ws)
 
 	ws.on("message", (data) => {
-		channels.get(channel)?.forEach((client) => {
+		clients.forEach((client) => {
 			if (client.readyState === WebSocket.OPEN) {
 				client.send(data.toString())
 			}
 		})
 	})
 
-	ws.on("close", () => {
-		channels.get(channel)?.delete(ws)
-		console.log(`Client disconnected from channel: ${channel}`)
+	ws.on("close", (code, reason) => {
+		clients.delete(ws)
+		console.log(`Client (${role}) disconnected from channel: ${channel}. Code: ${code}, Reason: ${reason}`)
 	})
 })
 
