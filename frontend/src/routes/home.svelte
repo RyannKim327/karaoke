@@ -1,4 +1,5 @@
 <script lang="ts">
+	import Logo from "@/assets/karakokey.png";
 	import { push } from "svelte-spa-router";
 
 	let roomCode = "";
@@ -28,10 +29,8 @@
 		class="w-full max-w-md rounded-3xl border border-white/10 bg-white/5 backdrop-blur-xl shadow-2xl p-8"
 	>
 		<div class="text-center mb-8">
-			<div
-				class="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-red-500/20 border border-red-500/30 mb-4"
-			>
-				🎤
+			<div class="inline-flex items-center justify-center w-25 h-25 mb-4">
+				<img src={Logo} />
 			</div>
 
 			<h1 class="text-5xl font-black tracking-tight">

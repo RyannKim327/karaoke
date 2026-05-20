@@ -1,6 +1,6 @@
 {
   "name": "karakokey",
-  "version": "1.1.0",
+  "version": "1.2.0-test",
   "author": "RyannKim327",
   "scripts": {
     "backend": "npx gh-pages -d ./backend -b backend",

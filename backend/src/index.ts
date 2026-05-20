@@ -2,7 +2,6 @@ import express from "express"
 import cors from "cors"
 import { createServer } from "http"
 import { WebSocketServer, WebSocket } from "ws"
-//import { play } from "./script/yt"
 import { play, search } from "./script/tubidy"
 
 const app = express()
