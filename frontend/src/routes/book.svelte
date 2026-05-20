@@ -19,7 +19,9 @@
 	let songs: Record<string, any>[] = [];
 
 	onMount(() => {
-		socket = new WebSocket(`${WS_HOST}/${params.id.toLowerCase()}`);
+		socket = new WebSocket(
+			`${WS_HOST}/${params.id.toLowerCase()}?role=book`,
+		);
 
 		socket.onopen = () => {
 			console.log("Initiated");

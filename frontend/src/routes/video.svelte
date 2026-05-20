@@ -1,10 +1,12 @@
 <script lang="ts">
 	import Logo from "@/assets/karakokey.png";
+	import { push } from "svelte-spa-router";
 	import { onMount, onDestroy } from "svelte";
 	import { fade } from "svelte/transition";
 	import { API_HOST, WS_HOST } from "@/lib/config";
 	import { YIN } from "pitchfinder";
 	import axios from "axios";
+	import toast, { Toaster } from "svelte-french-toast";
 
 	interface SongInfo {
 		title: string;
@@ -98,7 +100,6 @@
 			const pitch = yin(buffer);
 
 			if (pitch && pitch > 50 && pitch < 2000) {
-				// Basic filter for human voice range
 				framesWithPitch++;
 			}
 			totalFrames++;
@@ -112,18 +113,31 @@
 	async function getUrl(link: string) {
 		paused = false;
 		if (sources.length > 0) {
-			const { data } = await axios.get(`${API_HOST}/play?id=${link}`);
-			source = data.url;
-			setTimeout(() => {
-				if (video) video.play();
-			}, 500);
+			try {
+				const { data } = await axios.get(`${API_HOST}/play?id=${link}`);
+				console.log(data);
+				if (!data.url) {
+					toast("No data found", {
+						position: "bottom-right",
+					});
 
-			if (!micStream) {
-				micStream = await navigator.mediaDevices.getUserMedia({
-					audio: true,
-				});
+					nextSong();
+					return;
+				}
+				source = data.url;
+				setTimeout(() => {
+					if (video) video.play();
+				}, 500);
+
+				if (!micStream) {
+					micStream = await navigator.mediaDevices.getUserMedia({
+						audio: true,
+					});
+				}
+				audioAnalyzer(micStream);
+			} catch (e) {
+				console.log(e);
 			}
-			audioAnalyzer(micStream);
 		} else {
 			source = "";
 		}
@@ -135,8 +149,8 @@
 		analyzerActive = false;
 		framesWithPitch = 0;
 		totalFrames = 0;
+
 		if (sources.length > 0) {
-			id = sources[0].url;
 			getUrl(id);
 		} else {
 			source = "";
@@ -151,6 +165,7 @@
 		video?.pause();
 		generateScore();
 		source = "";
+
 		setTimeout(() => {
 			if (sources.length > 0) {
 				id = sources[0].url;
@@ -161,7 +176,7 @@
 				started = false;
 			}
 			sources.shift();
-		}, 4000); // wait for score to show before next song
+		}, 5000);
 	}
 
 	function startPlay() {
@@ -180,11 +195,9 @@
 			if (paused) {
 				paused = false;
 				video?.play();
-				startHeaderTimer();
 			} else {
 				paused = true;
 				video?.pause();
-				showHeader();
 			}
 		}
 		if (e.code === "ArrowRight") {
@@ -196,13 +209,8 @@
 	}
 
 	onMount(() => {
-		if (screen.orientation && screen.orientation.lock) {
-			screen.orientation
-				.lock("landscape")
-				.catch((err) => console.error("Orientation lock failed:", err));
-		}
 		window.addEventListener("keydown", handleKeydown);
-		socket = new WebSocket(`${WS_HOST}/${params.id.toLowerCase()}`);
+		socket = new WebSocket(`${WS_HOST}/${params.id.toLowerCase()}?role=video`);
 		socket.onopen = () => {
 			socket.send(JSON.stringify({ play: true }));
 			fullscreen();
@@ -213,15 +221,22 @@
 				socket.send(JSON.stringify({ play: true }));
 				fullscreen();
 			}
-			if (data.title) {
+			if (data.title && data.url) {
 				sources = [...sources, data];
 				startPlay();
 				fullscreen();
 			}
 		};
 		socket.onerror = (error: Event) => console.error("Socket error:", error);
-		socket.onclose = () => {
-			console.log("Socket disconnected");
+		socket.onclose = (event) => {
+			console.log("Socket disconnected", event.reason);
+			if (event.code === 1008) {
+				toast.error("A video device is already connected to this room.", {
+					position: "top-center",
+					duration: 5000,
+				});
+				push("/");
+			}
 		};
 	});
 
@@ -229,7 +244,6 @@
 		window.removeEventListener("keydown", handleKeydown);
 		if (socket) socket.close();
 		if (currentBlobUrl) URL.revokeObjectURL(currentBlobUrl);
-		if (headerTimeout) clearTimeout(headerTimeout);
 		analyzerActive = false;
 	});
 
@@ -338,4 +352,5 @@
 	<div
 		class="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-black/30 pointer-events-none"
 	/>
+	<Toaster />
 </div>
