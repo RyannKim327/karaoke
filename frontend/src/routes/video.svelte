@@ -1,4 +1,5 @@
 <script lang="ts">
+	import Logo from "@/assets/karakokey.png";
 	import { onMount, onDestroy } from "svelte";
 	import { fade } from "svelte/transition";
 	import { API_HOST, WS_HOST } from "@/lib/config";
@@ -195,6 +196,11 @@
 	}
 
 	onMount(() => {
+		if (screen.orientation && screen.orientation.lock) {
+			screen.orientation
+				.lock("landscape")
+				.catch((err) => console.error("Orientation lock failed:", err));
+		}
 		window.addEventListener("keydown", handleKeydown);
 		socket = new WebSocket(`${WS_HOST}/${params.id.toLowerCase()}`);
 		socket.onopen = () => {
@@ -251,7 +257,9 @@
 			class="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-zinc-900 to-black"
 		>
 			<div class="text-center flex flex-col items-center">
-				<div class="text-6xl mb-6">🎤</div>
+				<div class="text-6xl mb-6 h-30 w-30">
+					<img src={Logo} />
+				</div>
 				<h1 class="text-white text-5xl font-black tracking-tight mb-2">
 					Kara Kokey
 				</h1>
@@ -286,7 +294,6 @@
 		</div>
 	{/if}
 
-	<!-- Score overlay -->
 	{#if showScore && score !== null}
 		<div
 			class="absolute inset-0 flex items-center justify-center z-20 bg-black/60 backdrop-blur-sm"

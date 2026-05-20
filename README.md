@@ -1,7 +1,23 @@
-# Karakokey 🎤
-### MPOP Reverse II (Ryann Kim Sesgundo)
+<div align="center">
+  <img src="karakokey.png" alt="Karakokey Logo" width="200" />
+  <h1>Karakokey</h1>
+  <p>Developed by <strong>RyannKim327</strong> under <i>MPOP Reverse II</i></p>
+</div>
 
-Karakokey is a modern, web-based karaoke platform that leverages YouTube for its song library. It features a Svelte-powered frontend for a smooth user experience and a Node.js backend to handle search, streaming, and real-time synchronization via WebSockets.
+Karakokey is a modern, web-based karaoke platform that leverages Tubidy for its song library, serving as a digitalized version of the KTV or karaoke machines loved by most Filipinos. It features a Svelte-powered frontend for a smooth user experience and a Node.js backend to handle search, streaming, and real-time synchronization via WebSockets.
+
+---
+
+## 📖 How to Use
+
+1. **Visit the App:** Go to [ryannkim327.is-a.dev/karakokey](https://ryannkim327.is-a.dev/karakokey).
+2. **Create a Room:** Click on the "Create Room" button to start a new karaoke session.
+3. **Connect Devices:**
+   - Scan the **QR Code** displayed on the screen with another device (like your phone).
+   - Alternatively, manually input the **Room ID** (the code given by the room) on the join page.
+4. **Start Singing:** Use the connected device to search for songs and add them to the queue!
+
+---
 
 ## 🚀 Tech Stack
 
@@ -17,7 +33,7 @@ Karakokey is a modern, web-based karaoke platform that leverages YouTube for its
 - **Runtime:** [Node.js](https://nodejs.org/)
 - **Framework:** [Express](https://expressjs.com/)
 - **Real-time:** [WebSockets (ws)](https://github.com/websockets/ws)
-- **YouTube Integration:** [youtubei.js](https://github.com/LuanRT/YouTube.js)
+- **Search Integration:** Tubidy
 - **Language:** [TypeScript](https://www.typescriptlang.org/)
 
 ---
@@ -104,4 +120,4 @@ npm run deploy
 
 - **Claude AI:** Youtubei.js
 - **ChatGPT:** Design
-- **Gemini:** Websocket and documentation
+- **Gemini:** Websocket webscrape and documentation
